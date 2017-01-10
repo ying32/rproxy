@@ -8,9 +8,9 @@
 **不过目前不支持Cookie与Header的设置，只保留了Method, URL, Body段的数据**  
 
 > 使用方法：go get github.com/ying32/ReverseProxy
-> 1、分别编译**RServer**、 **RClient**。  
-> 2、在RServer目录下的runsvr.bat或者runsvr.sh修改为你想要的端口后启动并执行。  
-> 3、在RClient目录下的runcli_local.bat或者runcli_local.sh修改为你想要的端口后启动并执行。      
+> 1、分别编译**RPServer**、 **RPClient**。  
+> 2、在RPServer目录下的runsvr.bat或者runsvr.sh修改为你想要的端口后启动并执行。  
+> 3、在RPClient目录下的runcli_local.bat或者runcli_local.sh修改为你想要的端口后启动并执行。      
 
 **两个程序总共不到300行的代码量。简单是简单了点，但还是能用用的**  
 
