@@ -15,3 +15,5 @@
 **两个程序总共不到300行的代码量。简单是简单了点，但还是能用用的**  
 
 ##### 支持Win32, Win64, Linux32, Linux64, MacOSX32, MacOSX64等，无第三方依赖库。
+
+v0.1 释出 https://github.com/ying32/ReverseProxy/releases/tag/v0.1
