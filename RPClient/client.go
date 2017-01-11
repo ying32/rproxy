@@ -55,9 +55,7 @@ func StartClient(conn net.Conn) {
 		if string(val) == "sign" {
 			c, err := conn.Read(val)
 			if err == nil && c == 4 {
-				bs := bytes.NewBuffer(val)
-				var bodylen int32
-				binary.Read(bs, binary.LittleEndian, &bodylen)
+				bodylen := binary.LittleEndian.Uint32(val)
 				fmt.Println("服务端发送数据长为：", bodylen)
 				if bodylen > 0 {
 					bs := make([]byte, bodylen)

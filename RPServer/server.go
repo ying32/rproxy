@@ -105,9 +105,7 @@ func startHttpServer(port int) {
 				if err == nil && flags == "sign" {
 					c, err := clientConn.Read(val)
 					if err == nil && c == 4 {
-						bs := bytes.NewBuffer(val)
-						var bodylen int32
-						binary.Read(bs, binary.LittleEndian, &bodylen)
+						bodylen := binary.LittleEndian.Uint32(val)
 						if bodylen > 0 {
 							bs := make([]byte, bodylen)
 							if c, err := clientConn.Read(bs); err == nil && c == int(bodylen) {
