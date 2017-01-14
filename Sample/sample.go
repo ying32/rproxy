@@ -8,6 +8,7 @@ import (
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("服务端请求数据了！")
+		fmt.Println(r)
 		w.Write([]byte("请求成功！"))
 	})
 	fmt.Println("监听HTTP 8085端口中...")
