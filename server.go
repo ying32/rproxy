@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 )
 
 type TRPServer struct {
@@ -51,14 +53,7 @@ func (s *TRPServer) tcpserver() error {
 			log.Println(err)
 			continue
 		}
-		if s.conn != nil {
-			conn.Close()
-			log.Println("服务端已有客户端连接！")
-			continue
-		}
-		log.Println("连接新的客户端：", conn.RemoteAddr())
-		s.conn = conn
-		go s.cliProcess()
+		go s.cliProcess(conn)
 	}
 	return err
 }
@@ -90,7 +85,32 @@ func (s *TRPServer) httpserver() {
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", s.httpPort), nil))
 }
 
-func (s *TRPServer) cliProcess() error {
+func (s *TRPServer) cliProcess(conn *net.TCPConn) error {
+	// 设置10秒超时
+	conn.SetReadDeadline(time.Now().Add(time.Duration(10) * time.Second))
+	vval := make([]byte, 20)
+	_, err := conn.Read(vval)
+	if err != nil {
+		log.Println("客户端读超时。客户端地址为：:", conn.RemoteAddr())
+		conn.Close()
+		return err
+	}
+	if bytes.Compare(vval, getverifyval()[:]) != 0 {
+		log.Println("当前客户端连接校验错误，关闭此客户端:", conn.RemoteAddr())
+		conn.Close()
+		return err
+	}
+	// 清除
+	conn.SetReadDeadline(time.Time{})
+
+	if s.conn != nil {
+		log.Println("服务端已有客户端连接！断开之前的:", conn.RemoteAddr())
+		s.conn.Close()
+		s.conn = nil
+	}
+	log.Println("连接新的客户端：", conn.RemoteAddr())
+
+	s.conn = conn
 	return nil
 }
 

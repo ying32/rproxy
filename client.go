@@ -35,6 +35,9 @@ func (c *TRPClient) werror() {
 }
 
 func (c *TRPClient) process() error {
+	if _, err := c.conn.Write(getverifyval()); err != nil {
+		return err
+	}
 	val := make([]byte, 4)
 	for {
 		_, err := c.conn.Read(val)
