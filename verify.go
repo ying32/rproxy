@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// 简单的一个难值
+// 简单的一个校验值
 func getverifyval() []byte {
 	b := sha1.Sum([]byte(time.Now().Format("2006-01-02 15:04") + "DKibZF5TXvic1g3kY"))
 	return b[:]
