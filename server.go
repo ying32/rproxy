@@ -86,8 +86,8 @@ func (s *TRPServer) httpserver() {
 }
 
 func (s *TRPServer) cliProcess(conn *net.TCPConn) error {
-	// 设置10秒超时
-	conn.SetReadDeadline(time.Now().Add(time.Duration(10) * time.Second))
+	// 设置5秒超时
+	conn.SetReadDeadline(time.Now().Add(time.Duration(5) * time.Second))
 	vval := make([]byte, 20)
 	_, err := conn.Read(vval)
 	if err != nil {
