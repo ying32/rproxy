@@ -23,4 +23,4 @@
 
 ##### 支持Windows、Linux、MacOSX等，无第三方依赖库。
 
-v0.2 释出 https://github.com/ying32/ReverseProxy/releases/tag/v0.3
+v0.3 释出 https://github.com/ying32/ReverseProxy/releases/tag/v0.3
