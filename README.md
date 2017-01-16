@@ -19,7 +19,7 @@
 >  --httpport   当mode为server时为服务端监听端口，当为mode为client时为转发至本地客户端的端口  
 >  --mode       启动模式，可选为client、server，默认为client  
 >  --svraddr    当mode为client时有效，为连接服务器的地址，不需要填写端口  
-
+>  --vkey       客户端与服务端建立连接时校验的加密key，简单的。
 
 ##### 支持Windows、Linux、MacOSX等，无第三方依赖库。
 
