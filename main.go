@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	tcpPort  = flag.Int("tcpport", 0, "Socket连接或者监听的端口")
-	httpPort = flag.Int("httpport", 0, "当mode为server时为服务端监听端口，当为mode为client时为转发至本地客户端的端口")
-	rpMode   = flag.String("mode", "client", "启动模式，可选为client、server")
-	svrAddr  = flag.String("svraddr", "127.0.0.1", "当mode为client时有效，为连接服务器的地址")
+	tcpPort   = flag.Int("tcpport", 0, "Socket连接或者监听的端口")
+	httpPort  = flag.Int("httpport", 0, "当mode为server时为服务端监听端口，当为mode为client时为转发至本地客户端的端口")
+	rpMode    = flag.String("mode", "client", "启动模式，可选为client、server")
+	svrAddr   = flag.String("svraddr", "127.0.0.1", "当mode为client时有效，为连接服务器的地址")
+	verifyKey = flag.String("vkey", "", "用作客户端与服务端连接时的校验")
 )
 
 func main() {
@@ -26,6 +27,9 @@ func main() {
 	}
 	if *rpMode == "server" && *tcpPort == *httpPort {
 		log.Fatalln("tcp端口与http端口不能为同一个。")
+	}
+	if *verifyKey == "" {
+		log.Fatalln("必须输入一个验证的key")
 	}
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	if *rpMode == "client" {
