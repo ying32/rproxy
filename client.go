@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 )
 
 type TRPClient struct {
@@ -26,6 +27,8 @@ func (c *TRPClient) Start() error {
 	if err != nil {
 		return err
 	}
+	conn.(*net.TCPConn).SetKeepAlive(true)
+	conn.(*net.TCPConn).SetKeepAlivePeriod(time.Duration(2 * time.Second))
 	c.conn = conn
 	return c.process()
 }

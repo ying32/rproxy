@@ -37,6 +37,10 @@ func (s *TRPServer) Start() error {
 }
 
 func (s *TRPServer) Close() error {
+	if s.conn != nil {
+		s.conn.Close()
+		s.conn = nil
+	}
 	if s.listener != nil {
 		err := s.listener.Close()
 		s.listener = nil
@@ -109,7 +113,8 @@ func (s *TRPServer) cliProcess(conn *net.TCPConn) error {
 		s.conn = nil
 	}
 	log.Println("连接新的客户端：", conn.RemoteAddr())
-
+	conn.SetKeepAlive(true)
+	conn.SetKeepAlivePeriod(time.Duration(2 * time.Second))
 	s.conn = conn
 	return nil
 }
