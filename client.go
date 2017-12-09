@@ -45,6 +45,7 @@ func (c *TRPClient) process() error {
 	for {
 		_, err := c.conn.Read(val)
 		if err != nil {
+			log.Println("读数据错误，错误：", err)
 			return err
 		}
 		flags := string(val)
@@ -52,6 +53,7 @@ func (c *TRPClient) process() error {
 		case "sign":
 			_, err := c.conn.Read(val)
 			nlen := binary.LittleEndian.Uint32(val)
+			log.Println("收到服务端数据，长度：", nlen)
 			if nlen <= 0 {
 				log.Println("数据长度错误。")
 				c.werror()
@@ -63,13 +65,13 @@ func (c *TRPClient) process() error {
 				return err
 			}
 			if n != int(nlen) {
-				log.Println("读取数据长度错误。")
+				log.Printf("读取数服务端数据长度错误，已经读取%dbyte，总长度%d字节\n", n, nlen)
 				c.werror()
 				continue
 			}
 			req, err := DecodeRequest(raw, *httpPort)
 			if err != nil {
-				log.Println(err)
+				log.Println("DecodeRequest错误：", err)
 				c.werror()
 				continue
 			}
@@ -77,28 +79,31 @@ func (c *TRPClient) process() error {
 			client := new(http.Client)
 			resp, err := client.Do(req)
 			if err != nil {
-				log.Println(err)
+				log.Println("请求本地客户端错误：", err)
 				c.werror()
 				continue
 			}
 			defer resp.Body.Close()
 			respBytes, err := EncodeResponse(resp)
 			if err != nil {
-				log.Println(err)
+				log.Println("EncodeResponse错误：", err)
 				c.werror()
 				continue
 			}
 			n, err = c.conn.Write(respBytes)
 			if err != nil {
-				return err
+				log.Println("发送数据错误，错误：", err)
 			}
 			if n != len(respBytes) {
-				return errors.New("发送数据长度错误。")
+				log.Printf("发送数据长度错误，已经发送：%dbyte，总字节长：%dbyte\n", n, len(respBytes))
+			} else {
+				log.Printf("本次请求成功完成，共发送：%dbyte\n", n)
 			}
+
 		case "msg0":
-			return errors.New("服务端返回错误。")
+			log.Println("服务端返回错误。")
 		default:
-			return errors.New("服务端未知错误。")
+			// 不知道啥错误，不输出了
 		}
 	}
 	return nil

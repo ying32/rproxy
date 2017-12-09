@@ -5,10 +5,12 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -17,6 +19,7 @@ type TRPServer struct {
 	httpPort int
 	listener *net.TCPListener
 	conn     *net.TCPConn
+	sync.RWMutex
 }
 
 func NewRPServer(tcpPort, httpPort int) *TRPServer {
@@ -67,11 +70,9 @@ func badRequest(w http.ResponseWriter) {
 }
 
 func (s *TRPServer) httpserver() {
-	// chrome总是要请求这个，这里不要了！
-	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-	})
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		s.Lock()
+		defer s.Unlock()
 		log.Println(r.RequestURI)
 		err := s.write(r)
 		if err != nil {
@@ -152,17 +153,28 @@ func (s *TRPServer) read(w http.ResponseWriter) error {
 			if err != nil {
 				return err
 			}
-			nlen := binary.LittleEndian.Uint32(val)
+			nlen := int(binary.LittleEndian.Uint32(val))
 			if nlen == 0 {
 				return errors.New("读取客户端长度错误。")
 			}
-			raw := make([]byte, nlen)
-			c, err := s.conn.Read(raw)
-			if err != nil {
-				return err
+			log.Println("收到客户端数据，需要读取长度：", nlen)
+			raw := make([]byte, 0)
+			buff := make([]byte, 1024)
+			c := 0
+			for {
+				clen, err := s.conn.Read(buff)
+				if err != nil && err != io.EOF {
+					return err
+				}
+				raw = append(raw, buff[:clen]...)
+				c += clen
+				if c >= nlen {
+					break
+				}
 			}
-			if c != int(nlen) {
-				return errors.New("读取长度错误。")
+			log.Println("读取完成，长度：", c, "实际raw长度：", len(raw))
+			if c != nlen {
+				return fmt.Errorf("已读取长度错误，已读取%dbyte，需要读取%dbyte。", c, nlen)
 			}
 			resp, err := DecodeResponse(raw)
 			if err != nil {
@@ -174,13 +186,15 @@ func (s *TRPServer) read(w http.ResponseWriter) error {
 			}
 			for k, v := range resp.Header {
 				for _, v2 := range v {
-					w.Header().Add(k, v2)
+					w.Header().Set(k, v2)
 				}
 			}
 			w.WriteHeader(resp.StatusCode)
 			w.Write(bodyBytes)
 		case "msg0":
 			return errors.New("客户端返回错误，但我懒得读了！")
+		default:
+			log.Println("不知道是啥：", string(val))
 		}
 	} else {
 		return errors.New("客户端未连接。")
