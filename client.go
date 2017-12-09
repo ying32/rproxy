@@ -70,7 +70,7 @@ func (c *TRPClient) process() error {
 				return err
 			}
 			if n != int(nlen) {
-				log.Printf("读取数服务端数据长度错误，已经读取%dbyte，总长度%d字节\n", n, nlen)
+				log.Printf("读取服务端数据长度错误，已经读取%dbyte，总长度%d字节\n", n, nlen)
 				c.werror()
 				continue
 			}

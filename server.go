@@ -176,7 +176,6 @@ func (s *TRPServer) read(w http.ResponseWriter) error {
 			if c != nlen {
 				return fmt.Errorf("已读取长度错误，已读取%dbyte，需要读取%dbyte。", c, nlen)
 			}
-			log.Println("raw:", string(raw))
 			resp, err := DecodeResponse(raw)
 			if err != nil {
 				return err
