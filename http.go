@@ -75,11 +75,11 @@ func EncodeResponse(r *http.Response) ([]byte, error) {
 		return nil, err
 	}
 	return raw.Bytes(), nil
-
 }
 
 //// 将字节转为response
 func DecodeResponse(data []byte) (*http.Response, error) {
+
 	resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(data)), nil)
 	if err != nil {
 		return nil, err

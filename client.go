@@ -6,7 +6,12 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 	"time"
+)
+
+var (
+	disabledRedirect = errors.New("disabled redirect.")
 )
 
 type TRPClient struct {
@@ -75,15 +80,29 @@ func (c *TRPClient) process() error {
 				c.werror()
 				continue
 			}
-			log.Println(req.URL.Path)
+
+			rawQuery := ""
+			if req.URL.RawQuery != "" {
+				rawQuery = "?" + req.URL.RawQuery
+			}
+			log.Println(req.URL.Path + rawQuery)
 			client := new(http.Client)
+			client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+				return disabledRedirect
+			}
 			resp, err := client.Do(req)
-			if err != nil {
+			disRedirect := err != nil && strings.Contains(err.Error(), disabledRedirect.Error())
+			if err != nil && !disRedirect {
 				log.Println("请求本地客户端错误：", err)
 				c.werror()
 				continue
 			}
-			defer resp.Body.Close()
+			if !disRedirect {
+				defer resp.Body.Close()
+			} else {
+				resp.Body = nil
+				resp.ContentLength = 0
+			}
 			respBytes, err := EncodeResponse(resp)
 			if err != nil {
 				log.Println("EncodeResponse错误：", err)
