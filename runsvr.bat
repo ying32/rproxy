@@ -1,1 +1,1 @@
-ReverseProxy --tcpport=8284 --httpport=8084 --mode="server" --vkey="DKibZF5TXvic1g3kY"
+rproxy --tcpport=8284 --httpport=8084 --mode="server" --vkey="DKibZF5TXvic1g3kY"

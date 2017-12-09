@@ -67,7 +67,7 @@ func badRequest(w http.ResponseWriter) {
 }
 
 func (s *TRPServer) httpserver() {
-	// google总是要请求这个，这里不要了！
+	// chrome总是要请求这个，这里不要了！
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 	})
