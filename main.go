@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 )
 
 var (
@@ -33,10 +34,15 @@ func main() {
 	}
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	if *rpMode == "client" {
+	retry:
 		log.Println("客户端启动，连接：", *svrAddr, "， 端口：", *tcpPort, "， 并开启http服务端，端口为：", *httpPort)
 		cli := NewRPClient(fmt.Sprintf("%s:%d", *svrAddr, *tcpPort), *httpPort)
 		if err := cli.Start(); err != nil {
-			log.Fatalln(err)
+			log.Println(err)
+			// 重连
+			log.Println("5秒后重新连接...")
+			time.Sleep(time.Second * 5)
+			goto retry
 		}
 		defer cli.Close()
 	} else if *rpMode == "server" {
