@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -37,10 +36,6 @@ func (c *TRPClient) Start() error {
 	return c.process()
 }
 
-func (c *TRPClient) werror() {
-	c.conn.Write([]byte("msg0"))
-}
-
 func (c *TRPClient) process() error {
 	// 首先请求验证
 	v := EncodeVerify()
@@ -56,7 +51,7 @@ func (c *TRPClient) process() error {
 		if req.URL.RawQuery != "" {
 			rawQuery = "?" + req.URL.RawQuery
 		}
-		logPrintln(req.URL.Path + rawQuery)
+		logPrintln(req.Method + "  " + req.URL.Path + rawQuery)
 		// 请求本地指定的HTTP服务器
 		client := new(http.Client)
 		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
@@ -83,53 +78,33 @@ func (c *TRPClient) process() error {
 
 	// read循环
 	for {
-		log.Println("服务端发来数据")
+		err := readPackage(c.conn, func(cmd uint16, data []byte) error {
+			switch cmd {
+			case PacketCmd1:
+				// Decode请求
+				req, err := DecodeRequest(data, *httpPort, false)
+				if err != nil {
+					//log.Println("解析请求数据失败：", err)
+					return wError(c.conn, err)
+				}
+				respBytes, err := doHTTPClient(req)
+				if err != nil {
+					//log.Println("请求本地客户端数据失败：", err)
+					return wError(c.conn, err)
+				}
+				_, err = c.conn.Write(respBytes)
+				if err != nil {
+					// 写出错了，这里要退出
+					return err
+				}
+			}
 
-		head, err := chkHead(c.conn)
+			return nil
+		})
+		// read出错，退出
 		if err != nil {
-			if chkIOError(err) {
-				return err
-			}
-			continue
-		}
-		log.Println("服务端数据头校验成功。")
-		// 命令解析
-		log.Println("当前命令：", head.Cmd, ", Head:", head)
-		switch head.Cmd {
-		case PacketCmd1:
-			log.Println("进入包处理")
-			bodyData, err := readBody(c.conn, head.DataLen)
-			if err != nil {
-				if chkIOError(err) {
-					return err
-				}
-				continue
-			}
-
-			// Decode请求
-			req, err := DecodeRequest(bodyData, *httpPort, false)
-			if err != nil {
-				log.Println("解析请求数据失败：", err)
-				wError(c.conn, err)
-				continue
-			}
-			log.Println("解析请求数据成功")
-			respBytes, err := doHTTPClient(req)
-			if err != nil {
-				log.Println("请求本地客户端数据失败：", err)
-				wError(c.conn, err)
-				continue
-			}
-			log.Println("写数据到服务端")
-			_, err = c.conn.Write(respBytes)
-			if err != nil {
-				if chkIOError(err) {
-					return err
-				}
-			}
-
-		default:
-
+			c.Close()
+			return err
 		}
 	}
 	return nil

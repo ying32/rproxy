@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -90,19 +91,19 @@ func (s *TRPServer) httpServer() {
 func (s *TRPServer) cliProcess(conn net.Conn) error {
 	//  客户端没有在连接成功后5秒内发送数据则超时
 	conn.SetReadDeadline(time.Now().Add(5 * time.Second))
-	buff := make([]byte, PackageVerifyLen)
-	n, err := conn.Read(buff)
-	if n != PackageVerifyLen || err != nil {
-		logPrintln("客户端读取错误，关闭当前连接。")
-		conn.Close()
-		return err
-	}
-	// 清除
-	conn.SetReadDeadline(time.Time{})
-	// 校验，偷懒，直接来
-	if err = DecodeVerify(buff); err != nil {
-		logPrintln("当前客户端连接校验错误，关闭此客户端:", conn.RemoteAddr())
-		//conn.Write(EncodeCmd(PackageError, []byte("验证失败！")))
+	err := readPackage(conn, func(cmd uint16, data []byte) error {
+		conn.SetReadDeadline(time.Time{})
+		if cmd == PacketVerify {
+			if bytes.Compare(data, verifyVal[:]) != 0 {
+				return errors.New("首次连接校验证失败。")
+			}
+		} else {
+			return errors.New("首次请求命令不正确。")
+		}
+		return nil
+	})
+	if err != nil {
+		logPrintln("当前客户端连接校验错误，关闭此客户端。")
 		conn.Close()
 		return err
 	}
@@ -125,7 +126,6 @@ func (s *TRPServer) write(r *http.Request) error {
 		if err != nil {
 			return err
 		}
-		log.Println("当前服务端总字节数：", len(reqBytes))
 		_, err = s.conn.Write(reqBytes)
 		if err != nil {
 			return err
@@ -138,42 +138,30 @@ func (s *TRPServer) write(r *http.Request) error {
 
 func (s *TRPServer) read(w http.ResponseWriter) error {
 	if s.conn != nil {
-
-		head, err := chkHead(s.conn)
-		if err != nil {
-			log.Println("error:", err, head)
-			return err
-		}
-
-		log.Println(err)
-		log.Println("当前命令：", head.Cmd, ", Head:", head)
-		// 命令解析
-		switch head.Cmd {
-		case PacketCmd1:
-			bodyData, err := readBody(s.conn, head.DataLen)
-			if err != nil {
-				return err
-			}
-			// Decode Response
-			resp, err := DecodeResponse(bodyData)
-			if err != nil {
-				return err
-			}
-			bodyBytes, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return err
-			}
-			for k, v := range resp.Header {
-				for _, v2 := range v {
-					w.Header().Set(k, v2)
+		return readPackage(s.conn, func(cmd uint16, data []byte) error {
+			switch cmd {
+			case PacketCmd1:
+				resp, err := DecodeResponse(data)
+				if err != nil {
+					log.Println(err)
+					return err
 				}
+				bodyBytes, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Println(err)
+					return err
+				}
+				for k, v := range resp.Header {
+					for _, v2 := range v {
+						w.Header().Set(k, v2)
+					}
+				}
+				w.WriteHeader(resp.StatusCode)
+				w.Write(bodyBytes)
 			}
-			w.WriteHeader(resp.StatusCode)
-			w.Write(bodyBytes)
 
-		default:
-
-		}
+			return nil
+		})
 	}
 	return nil
 }

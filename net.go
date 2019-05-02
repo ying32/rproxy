@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -27,6 +26,7 @@ const (
 )
 
 type TPackageHead struct {
+	//Head uint8
 	Version uint16 // 2
 	Cmd     uint16 // 2
 	DataLen uint32 // 4
@@ -37,9 +37,6 @@ type TPackageHead struct {
 var (
 	// 封包头的结构长度
 	PackageHeadLen = 8
-
-	// 验证包长度，因为懒，所以直接固定值
-	PackageVerifyLen = 1 + PackageHeadLen + len(verifyVal) + 1
 )
 
 /*
@@ -77,48 +74,6 @@ func DecodeHead(data []byte) *TPackageHead {
 // 编码验证包，为固定长度， 1 + 2 + 2 + 20 + 4 + 1 = 30byte
 func EncodeVerify() []byte {
 	return EncodeCmd(PacketVerify, verifyVal[:])
-}
-
-// 检测数据包，主要对包头，包尾，版本，命令效验，并返回剩余的buff和对应的错误
-func checkPackage(data []byte, cmd uint16) (*bytes.Buffer, error) {
-	if len(data) <= 0 {
-		return nil, errors.New("封包数据长度不正确。")
-	}
-	// 校验包的首尾
-	if !(data[0] == PacketHead && data[len(data)-1] == PacketTail) {
-		return nil, errors.New("封包数据首尾不正确。")
-	}
-	// buff，移除首尾
-	raw := bytes.NewBuffer(data[1 : len(data)-1])
-	var val uint16
-	binary.Read(raw, binary.LittleEndian, &val)
-	if val != PacketVersion {
-		return nil, errors.New("封包数据版本与服务端不一致。")
-	}
-	binary.Read(raw, binary.LittleEndian, &val)
-	if val != cmd {
-		return nil, errors.New("封包数据版命令与当前要求命令不一致。")
-	}
-	return raw, nil
-}
-
-// 解码验证包，并验证是否正则
-func DecodeVerify(data []byte) error {
-	raw, err := checkPackage(data, PacketVerify)
-	if err != nil {
-		return err
-	}
-	var dataLen uint32
-	binary.Read(raw, binary.LittleEndian, &dataLen)
-	if int(dataLen) != len(verifyVal) {
-		return errors.New("数据长度不符合。")
-	}
-	val := make([]byte, 20)
-	raw.Read(val)
-	if bytes.Compare(val, verifyVal[:]) != 0 {
-		return errors.New("首次连接校验证失败。")
-	}
-	return nil
 }
 
 // 将request 的处理
@@ -175,80 +130,15 @@ func DecodeResponse(data []byte) (*http.Response, error) {
 }
 
 //-------------------------一些简化---------------------------
-// IO错误检测
-func chkIOError(err error) bool {
-	return err == io.EOF || err == io.ErrUnexpectedEOF
-}
 
 // 写错误
-func wError(conn net.Conn, err error) {
-	conn.Write(EncodeCmd(PackageError, []byte(err.Error())))
-}
-
-// 校验包头，并返回head和相应的错误
-func chkHead(conn net.Conn) (*TPackageHead, error) {
-	// 检测
-	headData := make([]byte, PackageHeadLen)
-	n, err := conn.Read(headData)
-	// 读取长度不对，或者出错，则继续
-	if n != PackageHeadLen {
-		return nil, errors.New("读取头长度错误。")
-	}
-	if err != nil {
-		return nil, err
-	}
-	head, err := DecodeHead(headData)
-	if err != nil {
-		return nil, err
-	}
-	log.Println("head:", head)
-
-	// 读取正确：解析数据
-	// 版本解析
-	if head.Version != PacketVersion {
-		return nil, errors.New("包版本与服务器不一致。")
-	}
-	return head, nil
-}
-
-// 校验包尾
-func chkTail(conn net.Conn) error {
-	tail := make([]byte, 1)
-	_, err := conn.Read(tail)
-	if err != nil {
-		return err
-	}
-	log.Println("读取尾部数据成功")
-	if tail[0] != PacketTail {
-		return errors.New("封包尾校验失败。")
-	}
-	log.Println("尾部数成校验成功。")
-	return nil
-}
-
-// 读主体
-func readBody(conn net.Conn, dataLen uint32) ([]byte, error) {
-	// 单页最大不能超过4M
-	if dataLen <= 0 || dataLen > 1024*1024*4 {
-		return nil, errors.New("数据长度太大。")
-	}
-	log.Println("数据长度范围正确。")
-	buff := make([]byte, dataLen)
-	n, err := conn.Read(buff)
-	if n != int(dataLen) {
-		return nil, errors.New("读取数据度长不对。")
-	}
-	log.Println("主体长度：", dataLen, "，已经读取：", n)
-	if err != nil {
-		return nil, err
-	}
-	log.Println("读取数据正常")
-
-	return buff, nil
+func wError(conn net.Conn, err error) error {
+	_, retErr := conn.Write(EncodeCmd(PackageError, []byte(err.Error())))
+	return retErr
 }
 
 // 读数据包
-func readPackage(conn net.Conn, fn func(cmd uint16, data []byte)) error {
+func readPackage(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
 	byteFlag := make([]byte, 1)
 	_, err := conn.Read(byteFlag)
 	if err != nil {
@@ -274,7 +164,7 @@ func readPackage(conn net.Conn, fn func(cmd uint16, data []byte)) error {
 					return err
 				}
 				if byteFlag[0] == PacketTail {
-					fn(head.Cmd, bodyData)
+					return fn(head.Cmd, bodyData)
 				} else {
 					log.Println("包尾不正确")
 				}
