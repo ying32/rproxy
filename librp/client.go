@@ -62,8 +62,10 @@ func (c *TRPClient) process() error {
 		if err != nil && !disRedirect {
 			return nil, err
 		}
-		defer resp.Body.Close()
-		if disRedirect {
+
+		if !disRedirect {
+			defer resp.Body.Close()
+		} else {
 			resp.Body = nil
 			resp.ContentLength = 0
 		}
