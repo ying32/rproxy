@@ -1,4 +1,4 @@
-package main
+package librp
 
 import (
 	"bytes"
@@ -71,7 +71,7 @@ func (s *TRPServer) httpServer() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		s.Lock()
 		defer s.Unlock()
-		logPrintln(r.RequestURI)
+		LogPrintln(r.RequestURI)
 		err := s.write(r)
 		if err != nil {
 			badRequest(w)
@@ -85,7 +85,7 @@ func (s *TRPServer) httpServer() {
 			return
 		}
 	})
-	logFatalln(http.ListenAndServe(fmt.Sprintf(":%d", s.httpPort), nil))
+	LogFatalln(http.ListenAndServe(fmt.Sprintf(":%d", s.httpPort), nil))
 }
 
 func (s *TRPServer) cliProcess(conn net.Conn) error {
@@ -103,17 +103,17 @@ func (s *TRPServer) cliProcess(conn net.Conn) error {
 		return nil
 	})
 	if err != nil {
-		logPrintln("当前客户端连接校验错误，关闭此客户端。")
+		LogPrintln("当前客户端连接校验错误，关闭此客户端。")
 		conn.Close()
 		return err
 	}
 	// 检测上次已连接的客户端，尝试断开
 	if s.conn != nil {
-		logPrintln("服务端已有客户端连接！断开之前的:", conn.RemoteAddr())
+		LogPrintln("服务端已有客户端连接！断开之前的:", conn.RemoteAddr())
 		s.conn.Close()
 		s.conn = nil
 	}
-	logPrintln("连接新的客户端：", conn.RemoteAddr())
+	LogPrintln("连接新的客户端：", conn.RemoteAddr())
 	conn.(*net.TCPConn).SetKeepAlive(true)
 	conn.(*net.TCPConn).SetKeepAlivePeriod(time.Duration(2 * time.Second))
 	s.conn = conn

@@ -1,4 +1,4 @@
-package main
+package librp
 
 import (
 	"bufio"

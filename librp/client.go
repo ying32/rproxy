@@ -1,4 +1,4 @@
-package main
+package librp
 
 import (
 	"errors"
@@ -44,14 +44,14 @@ func (c *TRPClient) process() error {
 	}
 
 	// 如果服务端没有主动关闭链接则说明已经认证成功
-	logPrintln("已连接服务端。")
+	LogPrintln("已连接服务端。")
 
 	doHTTPClient := func(req *http.Request) ([]byte, error) {
 		rawQuery := ""
 		if req.URL.RawQuery != "" {
 			rawQuery = "?" + req.URL.RawQuery
 		}
-		logPrintln(req.Method + "  " + req.URL.Path + rawQuery)
+		LogPrintln(req.Method + "  " + req.URL.Path + rawQuery)
 		// 请求本地指定的HTTP服务器
 		client := new(http.Client)
 		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
@@ -82,7 +82,7 @@ func (c *TRPClient) process() error {
 			switch cmd {
 			case PacketCmd1:
 				// Decode请求
-				req, err := DecodeRequest(data, *httpPort, false)
+				req, err := DecodeRequest(data, c.httpPort, false)
 				if err != nil {
 					//log.Println("解析请求数据失败：", err)
 					return wError(c.conn, err)

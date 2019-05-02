@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	. "github.com/ying32/rproxy/librp"
 )
 
 var (
@@ -18,39 +20,42 @@ var (
 func main() {
 	flag.Parse()
 	if *verifyKey == "" {
-		logFatalln("必须输入一个验证的key")
+		LogFatalln("必须输入一个验证的key")
 	}
 	if *tcpPort <= 0 || *tcpPort >= 65536 {
-		logFatalln("请输入正确的tcp端口。")
+		LogFatalln("请输入正确的tcp端口。")
 	}
 	if *httpPort <= 0 || *httpPort >= 65536 {
-		logFatalln("请输入正确的http端口。")
+		LogFatalln("请输入正确的http端口。")
 	}
 	if *rpMode != "client" && *rpMode != "server" {
-		logFatalln("请输入正确的服务启动模式")
+		LogFatalln("请输入正确的服务启动模式")
 	}
 	if *rpMode == "server" && *tcpPort == *httpPort {
-		logFatalln("tcp端口与http端口不能为同一个。")
+		LogFatalln("tcp端口与http端口不能为同一个。")
 	}
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
+	InitVerifyKey(*verifyKey)
+
 	if *rpMode == "client" {
 	retry:
-		logPrintln("客户端启动，连接服务器：", *svrAddr, "， 端口：", *tcpPort, "， 并开启http服务端，端口为：", *httpPort)
+		LogPrintln("客户端启动，连接服务器：", *svrAddr, "， 端口：", *tcpPort, "， 并开启http服务端，端口为：", *httpPort)
 		cli := NewRPClient(fmt.Sprintf("%s:%d", *svrAddr, *tcpPort), *httpPort)
 		if err := cli.Start(); err != nil {
-			logPrintln(err)
+			LogPrintln(err)
 			// 重连
-			logPrintln("5秒后重新连接...")
+			LogPrintln("5秒后重新连接...")
 			time.Sleep(time.Second * 5)
 			goto retry
 		}
 		defer cli.Close()
 	} else if *rpMode == "server" {
-		logPrintln("服务端启动，监听tcp服务端端口：", *tcpPort, "， http服务端端口：", *httpPort)
+		LogPrintln("服务端启动，监听tcp服务端端口：", *tcpPort, "， http服务端端口：", *httpPort)
 		svr := NewRPServer(*tcpPort, *httpPort)
 		if err := svr.Start(); err != nil {
-			logFatalln(err)
+			LogFatalln(err)
 		}
 		defer svr.Close()
 	}
