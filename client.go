@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"errors"
 	"log"
 	"net"
@@ -43,86 +42,94 @@ func (c *TRPClient) werror() {
 }
 
 func (c *TRPClient) process() error {
-	if _, err := c.conn.Write(getverifyval()); err != nil {
+	// 首先请求验证
+	v := EncodeVerify()
+	if _, err := c.conn.Write(v); err != nil {
 		return err
 	}
-	val := make([]byte, 4)
-	for {
-		_, err := c.conn.Read(val)
-		if err != nil {
-			log.Println("读数据错误，错误：", err)
-			return err
+
+	// 如果服务端没有主动关闭链接则说明已经认证成功
+	logPrintln("已连接服务端。")
+
+	doHTTPClient := func(req *http.Request) ([]byte, error) {
+		rawQuery := ""
+		if req.URL.RawQuery != "" {
+			rawQuery = "?" + req.URL.RawQuery
 		}
-		flags := string(val)
-		switch flags {
-		case "sign":
-			_, err := c.conn.Read(val)
-			nlen := binary.LittleEndian.Uint32(val)
-			log.Println("收到服务端数据，长度：", nlen)
-			if nlen <= 0 {
-				log.Println("数据长度错误。")
-				c.werror()
-				continue
-			}
-			raw := make([]byte, nlen)
-			n, err := c.conn.Read(raw)
-			if err != nil {
+		logPrintln(req.URL.Path + rawQuery)
+		// 请求本地指定的HTTP服务器
+		client := new(http.Client)
+		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			return disabledRedirect
+		}
+		resp, err := client.Do(req)
+		disRedirect := err != nil && strings.Contains(err.Error(), disabledRedirect.Error())
+		if err != nil && !disRedirect {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		if disRedirect {
+			resp.Body = nil
+			resp.ContentLength = 0
+		}
+
+		respBytes, err := EncodeResponse(resp)
+		if err != nil {
+			return nil, err
+		}
+
+		return respBytes, nil
+	}
+
+	// read循环
+	for {
+		log.Println("服务端发来数据")
+
+		head, err := chkHead(c.conn)
+		if err != nil {
+			if chkIOError(err) {
 				return err
 			}
-			if n != int(nlen) {
-				log.Printf("读取服务端数据长度错误，已经读取%dbyte，总长度%d字节\n", n, nlen)
-				c.werror()
-				continue
-			}
-			req, err := DecodeRequest(raw, *httpPort)
+			continue
+		}
+		log.Println("服务端数据头校验成功。")
+		// 命令解析
+		log.Println("当前命令：", head.Cmd, ", Head:", head)
+		switch head.Cmd {
+		case PacketCmd1:
+			log.Println("进入包处理")
+			bodyData, err := readBody(c.conn, head.DataLen)
 			if err != nil {
-				log.Println("DecodeRequest错误：", err)
-				c.werror()
+				if chkIOError(err) {
+					return err
+				}
 				continue
 			}
 
-			rawQuery := ""
-			if req.URL.RawQuery != "" {
-				rawQuery = "?" + req.URL.RawQuery
-			}
-			log.Println(req.URL.Path + rawQuery)
-			client := new(http.Client)
-			client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-				return disabledRedirect
-			}
-			resp, err := client.Do(req)
-			disRedirect := err != nil && strings.Contains(err.Error(), disabledRedirect.Error())
-			if err != nil && !disRedirect {
-				log.Println("请求本地客户端错误：", err)
-				c.werror()
+			// Decode请求
+			req, err := DecodeRequest(bodyData, *httpPort, false)
+			if err != nil {
+				log.Println("解析请求数据失败：", err)
+				wError(c.conn, err)
 				continue
 			}
-			if !disRedirect {
-				defer resp.Body.Close()
-			} else {
-				resp.Body = nil
-				resp.ContentLength = 0
-			}
-			respBytes, err := EncodeResponse(resp)
+			log.Println("解析请求数据成功")
+			respBytes, err := doHTTPClient(req)
 			if err != nil {
-				log.Println("EncodeResponse错误：", err)
-				c.werror()
+				log.Println("请求本地客户端数据失败：", err)
+				wError(c.conn, err)
 				continue
 			}
-			n, err = c.conn.Write(respBytes)
+			log.Println("写数据到服务端")
+			_, err = c.conn.Write(respBytes)
 			if err != nil {
-				log.Println("发送数据错误，错误：", err)
-			}
-			if n != len(respBytes) {
-				log.Printf("发送数据长度错误，已经发送：%dbyte，总字节长：%dbyte\n", n, len(respBytes))
-			} else {
-				log.Printf("本次请求成功完成，共发送：%dbyte\n", n)
+				if chkIOError(err) {
+					return err
+				}
 			}
 
-		case "msg0":
-			log.Println("服务端返回错误。")
 		default:
-			// 不知道啥错误，不输出了
+
 		}
 	}
 	return nil

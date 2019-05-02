@@ -1,11 +1,8 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -17,8 +14,8 @@ import (
 type TRPServer struct {
 	tcpPort  int
 	httpPort int
-	listener *net.TCPListener
-	conn     *net.TCPConn
+	listener net.Listener
+	conn     net.Conn
 	sync.RWMutex
 }
 
@@ -31,12 +28,12 @@ func NewRPServer(tcpPort, httpPort int) *TRPServer {
 
 func (s *TRPServer) Start() error {
 	var err error
-	s.listener, err = net.ListenTCP("tcp", &net.TCPAddr{net.ParseIP("0.0.0.0"), s.tcpPort, ""})
+	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", s.tcpPort))
 	if err != nil {
 		return err
 	}
-	go s.httpserver()
-	return s.tcpserver()
+	go s.httpServer()
+	return s.tcpServer()
 }
 
 func (s *TRPServer) Close() error {
@@ -52,10 +49,10 @@ func (s *TRPServer) Close() error {
 	return errors.New("TCP实例未创建！")
 }
 
-func (s *TRPServer) tcpserver() error {
+func (s *TRPServer) tcpServer() error {
 	var err error
 	for {
-		conn, err := s.listener.AcceptTCP()
+		conn, err := s.listener.Accept()
 		if err != nil {
 			log.Println(err)
 			continue
@@ -69,11 +66,11 @@ func badRequest(w http.ResponseWriter) {
 	http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 }
 
-func (s *TRPServer) httpserver() {
+func (s *TRPServer) httpServer() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		s.Lock()
 		defer s.Unlock()
-		log.Println(r.RequestURI)
+		logPrintln(r.RequestURI)
 		err := s.write(r)
 		if err != nil {
 			badRequest(w)
@@ -87,51 +84,51 @@ func (s *TRPServer) httpserver() {
 			return
 		}
 	})
-	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", s.httpPort), nil))
+	logFatalln(http.ListenAndServe(fmt.Sprintf(":%d", s.httpPort), nil))
 }
 
-func (s *TRPServer) cliProcess(conn *net.TCPConn) error {
-	// 设置5秒超时
-	conn.SetReadDeadline(time.Now().Add(time.Duration(5) * time.Second))
-	vval := make([]byte, 20)
-	_, err := conn.Read(vval)
-	if err != nil {
-		log.Println("客户端读超时。客户端地址为：:", conn.RemoteAddr())
-		conn.Close()
-		return err
-	}
-	if bytes.Compare(vval, getverifyval()[:]) != 0 {
-		log.Println("当前客户端连接校验错误，关闭此客户端:", conn.RemoteAddr())
+func (s *TRPServer) cliProcess(conn net.Conn) error {
+	//  客户端没有在连接成功后5秒内发送数据则超时
+	conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+	buff := make([]byte, PackageVerifyLen)
+	n, err := conn.Read(buff)
+	if n != PackageVerifyLen || err != nil {
+		logPrintln("客户端读取错误，关闭当前连接。")
 		conn.Close()
 		return err
 	}
 	// 清除
 	conn.SetReadDeadline(time.Time{})
-
+	// 校验，偷懒，直接来
+	if err = DecodeVerify(buff); err != nil {
+		logPrintln("当前客户端连接校验错误，关闭此客户端:", conn.RemoteAddr())
+		//conn.Write(EncodeCmd(PackageError, []byte("验证失败！")))
+		conn.Close()
+		return err
+	}
+	// 检测上次已连接的客户端，尝试断开
 	if s.conn != nil {
-		log.Println("服务端已有客户端连接！断开之前的:", conn.RemoteAddr())
+		logPrintln("服务端已有客户端连接！断开之前的:", conn.RemoteAddr())
 		s.conn.Close()
 		s.conn = nil
 	}
-	log.Println("连接新的客户端：", conn.RemoteAddr())
-	conn.SetKeepAlive(true)
-	conn.SetKeepAlivePeriod(time.Duration(2 * time.Second))
+	logPrintln("连接新的客户端：", conn.RemoteAddr())
+	conn.(*net.TCPConn).SetKeepAlive(true)
+	conn.(*net.TCPConn).SetKeepAlivePeriod(time.Duration(2 * time.Second))
 	s.conn = conn
 	return nil
 }
 
 func (s *TRPServer) write(r *http.Request) error {
 	if s.conn != nil {
-		raw, err := EncodeRequest(r)
+		reqBytes, err := EncodeRequest(r)
 		if err != nil {
 			return err
 		}
-		c, err := s.conn.Write(raw)
+		log.Println("当前服务端总字节数：", len(reqBytes))
+		_, err = s.conn.Write(reqBytes)
 		if err != nil {
 			return err
-		}
-		if c != len(raw) {
-			return errors.New("写出长度与字节长度不一致。")
 		}
 	} else {
 		return errors.New("客户端未连接。")
@@ -141,42 +138,24 @@ func (s *TRPServer) write(r *http.Request) error {
 
 func (s *TRPServer) read(w http.ResponseWriter) error {
 	if s.conn != nil {
-		val := make([]byte, 4) // flag
-		_, err := s.conn.Read(val)
+
+		head, err := chkHead(s.conn)
 		if err != nil {
+			log.Println("error:", err, head)
 			return err
 		}
-		flags := string(val)
-		switch flags {
-		case "sign":
-			_, err = s.conn.Read(val)
+
+		log.Println(err)
+		log.Println("当前命令：", head.Cmd, ", Head:", head)
+		// 命令解析
+		switch head.Cmd {
+		case PacketCmd1:
+			bodyData, err := readBody(s.conn, head.DataLen)
 			if err != nil {
 				return err
 			}
-			nlen := int(binary.LittleEndian.Uint32(val))
-			if nlen == 0 {
-				return errors.New("读取客户端长度错误。")
-			}
-			log.Println("收到客户端数据，需要读取长度：", nlen)
-			raw := make([]byte, 0)
-			buff := make([]byte, 1024)
-			c := 0
-			for {
-				clen, err := s.conn.Read(buff)
-				if err != nil && err != io.EOF {
-					return err
-				}
-				raw = append(raw, buff[:clen]...)
-				c += clen
-				if c >= nlen {
-					break
-				}
-			}
-			log.Println("读取完成，长度：", c, "实际raw长度：", len(raw))
-			if c != nlen {
-				return fmt.Errorf("已读取长度错误，已读取%dbyte，需要读取%dbyte。", c, nlen)
-			}
-			resp, err := DecodeResponse(raw)
+			// Decode Response
+			resp, err := DecodeResponse(bodyData)
 			if err != nil {
 				return err
 			}
@@ -191,13 +170,10 @@ func (s *TRPServer) read(w http.ResponseWriter) error {
 			}
 			w.WriteHeader(resp.StatusCode)
 			w.Write(bodyBytes)
-		case "msg0":
-			return errors.New("客户端返回错误，但我懒得读了！")
+
 		default:
-			log.Println("不知道是啥：", string(val))
+
 		}
-	} else {
-		return errors.New("客户端未连接。")
 	}
 	return nil
 }
