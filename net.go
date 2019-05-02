@@ -25,7 +25,7 @@ const (
 	PacketVersion uint16 = 0x01
 )
 
-type TPackageHead struct {
+type TPacketHead struct {
 	//Head uint8
 	Version uint16 // 2
 	Cmd     uint16 // 2
@@ -36,7 +36,7 @@ type TPackageHead struct {
 
 var (
 	// 封包头的结构长度
-	PackageHeadLen = 8
+	PacketHeadLen = 8
 )
 
 /*
@@ -50,7 +50,7 @@ var (
 // 编码数据
 func EncodeCmd(cmd uint16, data []byte) []byte {
 	raw := bytes.NewBuffer([]byte{})
-	head := TPackageHead{}
+	head := TPacketHead{}
 	head.Version = PacketVersion
 	head.Cmd = cmd
 	head.DataLen = uint32(len(data))
@@ -63,8 +63,8 @@ func EncodeCmd(cmd uint16, data []byte) []byte {
 }
 
 // DecodeHead
-func DecodeHead(data []byte) *TPackageHead {
-	head := new(TPackageHead)
+func DecodeHead(data []byte) *TPacketHead {
+	head := new(TPacketHead)
 	raw := bytes.NewBuffer(data)
 	binary.Read(raw, binary.LittleEndian, head)
 
@@ -138,7 +138,7 @@ func wError(conn net.Conn, err error) error {
 }
 
 // 读数据包
-func readPackage(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
+func readPacket(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
 	byteFlag := make([]byte, 1)
 	_, err := conn.Read(byteFlag)
 	if err != nil {
@@ -146,7 +146,7 @@ func readPackage(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
 	}
 	// 检测包头，必须等于这个才
 	if byteFlag[0] == PacketHead {
-		headBuff := make([]byte, PackageHeadLen)
+		headBuff := make([]byte, PacketHeadLen)
 		_, err := conn.Read(headBuff)
 		if err != nil {
 			return err

@@ -22,7 +22,7 @@ func TestHttp(t *testing.T) {
 	t.Log(head[1:3])
 	t.Log(head[3:])
 
-	pHead := TPackageHead{}
+	pHead := TPacketHead{}
 	pHead.Head = PacketHead
 	pHead.Version = PacketVersion
 	pHead.Cmd = PacketCmd1
@@ -30,7 +30,7 @@ func TestHttp(t *testing.T) {
 	raw := bytes.NewBuffer([]byte{})
 	binary.Write(raw, binary.LittleEndian, pHead)
 	///
-	phead2 := TPackageHead{}
+	phead2 := TPacketHead{}
 	raw2 := bytes.NewBuffer(raw.Bytes())
 	binary.Read(raw2, binary.LittleEndian, &phead2)
 	t.Log(phead2)

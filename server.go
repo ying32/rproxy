@@ -91,7 +91,7 @@ func (s *TRPServer) httpServer() {
 func (s *TRPServer) cliProcess(conn net.Conn) error {
 	//  客户端没有在连接成功后5秒内发送数据则超时
 	conn.SetReadDeadline(time.Now().Add(5 * time.Second))
-	err := readPackage(conn, func(cmd uint16, data []byte) error {
+	err := readPacket(conn, func(cmd uint16, data []byte) error {
 		conn.SetReadDeadline(time.Time{})
 		if cmd == PacketVerify {
 			if bytes.Compare(data, verifyVal[:]) != 0 {
@@ -138,7 +138,7 @@ func (s *TRPServer) write(r *http.Request) error {
 
 func (s *TRPServer) read(w http.ResponseWriter) error {
 	if s.conn != nil {
-		return readPackage(s.conn, func(cmd uint16, data []byte) error {
+		return readPacket(s.conn, func(cmd uint16, data []byte) error {
 			switch cmd {
 			case PacketCmd1:
 				resp, err := DecodeResponse(data)

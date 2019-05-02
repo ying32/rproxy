@@ -5,11 +5,6 @@ import (
 	"log"
 )
 
-var (
-	// 验证的值
-	verifyVal [20]byte
-)
-
 // time.Now().Format("2006-01-02 15:04:05"),
 
 // 日志打印，这里封装下，用于格式化

@@ -78,7 +78,7 @@ func (c *TRPClient) process() error {
 
 	// read循环
 	for {
-		err := readPackage(c.conn, func(cmd uint16, data []byte) error {
+		err := readPacket(c.conn, func(cmd uint16, data []byte) error {
 			switch cmd {
 			case PacketCmd1:
 				// Decode请求
