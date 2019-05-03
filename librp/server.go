@@ -114,8 +114,7 @@ func (s *TRPServer) cliProcess(conn net.Conn) error {
 		s.conn = nil
 	}
 	LogPrintln("连接新的客户端：", conn.RemoteAddr())
-	conn.(*net.TCPConn).SetKeepAlive(true)
-	conn.(*net.TCPConn).SetKeepAlivePeriod(time.Duration(2 * time.Second))
+	keepALive(conn)
 	s.conn = conn
 	return nil
 }

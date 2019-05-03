@@ -4,12 +4,6 @@ import (
 	"errors"
 	"net"
 	"net/http"
-	"strings"
-	"time"
-)
-
-var (
-	disabledRedirect = errors.New("disabled redirect.")
 )
 
 type TRPClient struct {
@@ -30,8 +24,7 @@ func (c *TRPClient) Start() error {
 	if err != nil {
 		return err
 	}
-	conn.(*net.TCPConn).SetKeepAlive(true)
-	conn.(*net.TCPConn).SetKeepAlivePeriod(time.Duration(2 * time.Second))
+	keepALive(c.conn)
 	c.conn = conn
 	return c.process()
 }
@@ -55,21 +48,14 @@ func (c *TRPClient) process() error {
 		// 请求本地指定的HTTP服务器
 		client := new(http.Client)
 		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-			return disabledRedirect
+			return http.ErrUseLastResponse
 		}
 		resp, err := client.Do(req)
-		disRedirect := err != nil && strings.Contains(err.Error(), disabledRedirect.Error())
-		if err != nil && !disRedirect {
+
+		if err != nil {
 			return nil, err
 		}
-
-		if !disRedirect {
-			defer resp.Body.Close()
-		} else {
-			resp.Body = nil
-			resp.ContentLength = 0
-		}
-
+		defer resp.Body.Close()
 		respBytes, err := EncodeResponse(resp)
 		if err != nil {
 			return nil, err
@@ -109,7 +95,6 @@ func (c *TRPClient) process() error {
 			return err
 		}
 	}
-	return nil
 }
 
 func (c *TRPClient) Close() error {

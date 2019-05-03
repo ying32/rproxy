@@ -12,6 +12,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"time"
 )
 
 const (
@@ -137,6 +138,18 @@ func wError(conn net.Conn, err error) error {
 	return retErr
 }
 
+// 写数据
+func wData(conn net.Conn, data []byte) error {
+
+	return nil
+}
+
+// 读数据
+func rData(conn net.Conn) error {
+
+	return nil
+}
+
 // 读数据包
 func readPacket(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
 	byteFlag := make([]byte, 1)
@@ -176,4 +189,10 @@ func readPacket(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
 		}
 	}
 	return nil
+}
+
+func keepALive(conn net.Conn) {
+	if conn.(*net.TCPConn).SetKeepAlive(true) == nil {
+		conn.(*net.TCPConn).SetKeepAlivePeriod(time.Duration(10 * time.Second))
+	}
 }
