@@ -76,6 +76,16 @@ func EncodeVerify() []byte {
 	return EncodeCmd(PacketVerify, verifyVal[:])
 }
 
+// 验证成功回写
+func EncodeVerifyOK() []byte {
+	return EncodeCmd(PacketVerify, []byte("ok"))
+}
+
+// 验证失败回写
+func EncodeVerifyFailed() []byte {
+	return EncodeCmd(PacketVerify, []byte("failed"))
+}
+
 // 将request 的处理
 func EncodeRequest(r *http.Request) ([]byte, error) {
 	reqBytes, err := httputil.DumpRequest(r, true)
@@ -133,18 +143,17 @@ func DecodeResponse(data []byte) (*http.Response, error) {
 
 // 写错误
 func wError(conn net.Conn, err error) error {
-	_, retErr := conn.Write(EncodeCmd(PackageError, []byte(err.Error())))
-	return retErr
+	return wData(conn, EncodeCmd(PackageError, []byte(err.Error())))
 }
 
 // 写数据
 func wData(conn net.Conn, data []byte) error {
-	//bsBuff := bytes.NewBuffer(data)
-	//for {
-	//	n, err := bsBuff.WriteTo(conn)
-	//
-	//}
-	return nil
+	if conn == nil {
+		return errors.New("连接无效。")
+	}
+	// 先不理写入的
+	_, err := conn.Write(data)
+	return err
 }
 
 // 读数据
@@ -171,6 +180,9 @@ func rData(conn net.Conn, bLen int) ([]byte, error) {
 
 // 读数据包
 func readPacket(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
+	if conn == nil {
+		return errors.New("连接无效。")
+	}
 	byteFlag := make([]byte, 1)
 	_, err := conn.Read(byteFlag)
 	if err != nil {

@@ -103,71 +103,60 @@ func (s *TRPServer) cliProcess(conn net.Conn) error {
 	})
 	if err != nil {
 		Log.I("当前客户端连接校验错误，关闭此客户端。")
-		conn.Write(EncodeCmd(PacketVerify, []byte("failed")))
+		conn.Write(EncodeVerifyFailed())
 		conn.Close()
 		return err
 	}
-	if _, err := conn.Write(EncodeCmd(PacketVerify, []byte("ok"))); err != nil {
-		return err
-	}
-
 	// 检测上次已连接的客户端，尝试断开
 	if s.conn != nil {
-		Log.I("服务端已有客户端连接！断开之前的:", conn.RemoteAddr())
+		Log.I("服务端已有客户端连接！断开之前的:", IPStr(conn))
 		s.conn.Close()
 		s.conn = nil
 	}
-	Log.I("连接新的客户端：", conn.RemoteAddr())
-	keepALive(conn)
+	if _, err := conn.Write(EncodeVerifyOK()); err != nil {
+		return err
+	}
+	Log.I("连接新的客户端：", IPStr(conn))
 	s.conn = conn
+	keepALive(s.conn)
 	return nil
 }
 
 func (s *TRPServer) write(r *http.Request) error {
-	if s.conn != nil {
-		reqBytes, err := EncodeRequest(r)
-		if err != nil {
-			return err
-		}
-		_, err = s.conn.Write(reqBytes)
-		if err != nil {
-			return err
-		}
-	} else {
+	if s.conn == nil {
 		return errors.New("客户端未连接。")
 	}
-	return nil
+	reqBytes, err := EncodeRequest(r)
+	if err != nil {
+		return err
+	}
+	return wData(s.conn, reqBytes)
 }
 
 func (s *TRPServer) read(w http.ResponseWriter) error {
-	if s.conn != nil {
-		return readPacket(s.conn, func(cmd uint16, data []byte) error {
-			switch cmd {
-			case PacketCmd1:
-				resp, err := DecodeResponse(data)
-				if err != nil {
-					Log.E(err)
-					return err
-				}
-				bodyBytes, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					Log.E(err)
-					return err
-				}
-				for k, v := range resp.Header {
-					for _, v2 := range v {
-						w.Header().Set(k, v2)
-					}
-				}
-				w.WriteHeader(resp.StatusCode)
-				w.Write(bodyBytes)
-
-			case PackageError:
-				Log.E(string(data))
+	return readPacket(s.conn, func(cmd uint16, data []byte) error {
+		switch cmd {
+		case PacketCmd1:
+			resp, err := DecodeResponse(data)
+			if err != nil {
+				return err
 			}
+			bodyBytes, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+			for k, v := range resp.Header {
+				for _, v2 := range v {
+					w.Header().Set(k, v2)
+				}
+			}
+			w.WriteHeader(resp.StatusCode)
+			w.Write(bodyBytes)
 
-			return nil
-		})
-	}
-	return nil
+		case PackageError:
+			return errors.New(string(data))
+		}
+
+		return nil
+	})
 }
