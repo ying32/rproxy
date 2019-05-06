@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -198,13 +197,13 @@ func readPacket(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
 				if byteFlag[0] == PacketTail {
 					return fn(head.Cmd, bodyData)
 				} else {
-					log.Println("包尾不正确")
+					Log.E("包尾不正确")
 				}
 			} else {
-				log.Println("数据太长")
+				Log.E("数据太长")
 			}
 		} else {
-			log.Println("版本不一致")
+			Log.E("版本不一致")
 		}
 	}
 	return nil
