@@ -30,6 +30,7 @@ func (l Logger) E(v ...interface{}) {
 }
 
 func (l Logger) EF(v ...interface{}) {
+	textRed()
 	l.println(3, "ERROR", v...)
 	os.Exit(1)
 }
