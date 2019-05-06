@@ -38,7 +38,8 @@ func main() {
 
 	if *rpMode == "client" {
 	retry:
-		Log.I("客户端启动，连接服务器：", *svrAddr, "， 端口：", *tcpPort, "， 并开启http服务端，端口为：", *httpPort)
+		Log.I("客户端启动，连接服务器：", *svrAddr, "， 端口：", *tcpPort)
+		Log.I("转发至本地HTTP端口：", *httpPort)
 		cli := NewRPClient(fmt.Sprintf("%s:%d", *svrAddr, *tcpPort), *httpPort)
 		if err := cli.Start(); err != nil {
 			Log.E(err)
@@ -49,7 +50,8 @@ func main() {
 		}
 		defer cli.Close()
 	} else if *rpMode == "server" {
-		Log.I("服务端启动，监听tcp服务端端口：", *tcpPort, "， http服务端端口：", *httpPort)
+		Log.I("TCP服务端已启动，端口：", *tcpPort)
+		Log.I("HTTP服务端已开启，端口：", *httpPort)
 		svr := NewRPServer(*tcpPort, *httpPort)
 		if err := svr.Start(); err != nil {
 			Log.EF(err)
