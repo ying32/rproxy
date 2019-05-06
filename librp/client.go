@@ -2,6 +2,7 @@ package librp
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 )
@@ -12,9 +13,9 @@ type TRPClient struct {
 	conn     net.Conn
 }
 
-func NewRPClient(svraddr string, httpPort int) *TRPClient {
+func NewRPClient(svrAddr string, httpPort int) *TRPClient {
 	c := new(TRPClient)
-	c.svrAddr = svraddr
+	c.svrAddr = svrAddr
 	c.httpPort = httpPort
 	return c
 }
@@ -85,6 +86,8 @@ func (c *TRPClient) process() error {
 					// 写出错了，这里要退出
 					return err
 				}
+			case PackageError:
+				fmt.Println("错误：", string(data))
 			}
 
 			return nil

@@ -157,6 +157,9 @@ func (s *TRPServer) read(w http.ResponseWriter) error {
 				}
 				w.WriteHeader(resp.StatusCode)
 				w.Write(bodyBytes)
+
+			case PackageError:
+				fmt.Println("错误：", string(data))
 			}
 
 			return nil
