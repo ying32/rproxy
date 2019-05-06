@@ -140,14 +140,34 @@ func wError(conn net.Conn, err error) error {
 
 // 写数据
 func wData(conn net.Conn, data []byte) error {
-
+	//bsBuff := bytes.NewBuffer(data)
+	//for {
+	//	n, err := bsBuff.WriteTo(conn)
+	//
+	//}
 	return nil
 }
 
 // 读数据
-func rData(conn net.Conn) error {
-
-	return nil
+func rData(conn net.Conn, bLen int) ([]byte, error) {
+	bsBuff := bytes.NewBuffer([]byte{})
+	bufLen := bLen
+	for {
+		if bsBuff.Len() >= bLen {
+			break
+		}
+		buf := make([]byte, bufLen)
+		nr, err := conn.Read(buf)
+		if err != nil {
+			return nil, err
+		}
+		bsBuff.Write(buf[:nr])
+		if nr == bLen {
+			break
+		}
+		bufLen = bLen - bsBuff.Len()
+	}
+	return bsBuff.Bytes(), nil
 }
 
 // 读数据包
@@ -167,8 +187,7 @@ func readPacket(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
 		head := DecodeHead(headBuff)
 		if head.Version == PacketVersion {
 			if head.DataLen > 0 || head.DataLen <= 1024*1024*4 {
-				bodyData := make([]byte, head.DataLen)
-				_, err := conn.Read(bodyData)
+				bodyData, err := rData(conn, int(head.DataLen))
 				if err != nil {
 					return err
 				}
@@ -193,6 +212,6 @@ func readPacket(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
 
 func keepALive(conn net.Conn) {
 	if conn.(*net.TCPConn).SetKeepAlive(true) == nil {
-		conn.(*net.TCPConn).SetKeepAlivePeriod(time.Duration(10 * time.Second))
+		conn.(*net.TCPConn).SetKeepAlivePeriod(time.Duration(1 * time.Minute))
 	}
 }

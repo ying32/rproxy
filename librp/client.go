@@ -2,7 +2,6 @@ package librp
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"net/http"
 )
@@ -25,19 +24,28 @@ func (c *TRPClient) Start() error {
 	if err != nil {
 		return err
 	}
-	keepALive(c.conn)
 	c.conn = conn
 	return c.process()
 }
 
 func (c *TRPClient) process() error {
 	// 首先请求验证
-	v := EncodeVerify()
-	if _, err := c.conn.Write(v); err != nil {
+	if _, err := c.conn.Write(EncodeVerify()); err != nil {
+		return err
+	}
+	err := readPacket(c.conn, func(cmd uint16, data []byte) error {
+		if cmd == PacketVerify {
+			if string(data) == "ok" {
+				return nil
+			}
+		}
+		return errors.New("验证失败。")
+	})
+	if err != nil {
 		return err
 	}
 
-	// 如果服务端没有主动关闭链接则说明已经认证成功
+	keepALive(c.conn)
 	LogPrintln("已连接服务端。")
 
 	doHTTPClient := func(req *http.Request) ([]byte, error) {
@@ -73,21 +81,22 @@ func (c *TRPClient) process() error {
 				// Decode请求
 				req, err := DecodeRequest(data, c.httpPort, false)
 				if err != nil {
-					//log.Println("解析请求数据失败：", err)
+					//LogPrintln("解析请求数据失败：", err)
 					return wError(c.conn, err)
 				}
 				respBytes, err := doHTTPClient(req)
 				if err != nil {
-					//log.Println("请求本地客户端数据失败：", err)
+					//LogPrintln("请求本地客户端数据失败：", err)
 					return wError(c.conn, err)
 				}
 				_, err = c.conn.Write(respBytes)
+				//LogPrintln("需要写出字节数：", len(respBytes), "，实际写出字节数：", n)
 				if err != nil {
 					// 写出错了，这里要退出
 					return err
 				}
 			case PackageError:
-				fmt.Println("错误：", string(data))
+				LogPrintln("错误：", string(data))
 			}
 
 			return nil

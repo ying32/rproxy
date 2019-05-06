@@ -104,9 +104,12 @@ func (s *TRPServer) cliProcess(conn net.Conn) error {
 	})
 	if err != nil {
 		LogPrintln("当前客户端连接校验错误，关闭此客户端。")
+		conn.Write(EncodeCmd(PacketVerify, []byte("failed")))
 		conn.Close()
 		return err
 	}
+	conn.Write(EncodeCmd(PacketVerify, []byte("ok")))
+
 	// 检测上次已连接的客户端，尝试断开
 	if s.conn != nil {
 		LogPrintln("服务端已有客户端连接！断开之前的:", conn.RemoteAddr())
