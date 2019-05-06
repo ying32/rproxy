@@ -63,7 +63,7 @@ func (s *TRPServer) tcpServer() error {
 }
 
 func badRequest(w http.ResponseWriter) {
-	http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	http.Error(w, "请求错误，错误消息请看控制台信息。", http.StatusBadRequest)
 }
 
 func (s *TRPServer) httpServer() {
@@ -102,14 +102,14 @@ func (s *TRPServer) cliProcess(conn net.Conn) error {
 		return nil
 	})
 	if err != nil {
-		Log.I("当前客户端连接校验错误，关闭此客户端。")
+		Log.W("当前客户端连接校验错误，关闭此客户端。")
 		conn.Write(EncodeVerifyFailed())
 		conn.Close()
 		return err
 	}
 	// 检测上次已连接的客户端，尝试断开
 	if s.conn != nil {
-		Log.I("服务端已有客户端连接！断开之前的:", IPStr(conn))
+		Log.W("服务端已有客户端连接！断开之前的:", IPStr(conn))
 		s.conn.Close()
 		s.conn = nil
 	}
