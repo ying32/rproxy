@@ -93,7 +93,7 @@ func (c *TRPClient) process() error {
 					return err
 				}
 			case PackageError:
-				Log.I(string(data))
+				Log.E(string(data))
 			}
 
 			return nil

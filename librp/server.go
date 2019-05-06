@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"sync"
@@ -55,7 +54,7 @@ func (s *TRPServer) tcpServer() error {
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
-			log.Println(err)
+			Log.E(err)
 			continue
 		}
 		go s.cliProcess(conn)
@@ -75,13 +74,13 @@ func (s *TRPServer) httpServer() {
 		err := s.write(r)
 		if err != nil {
 			badRequest(w)
-			log.Println(err)
+			Log.E(err)
 			return
 		}
 		err = s.read(w)
 		if err != nil {
 			badRequest(w)
-			log.Println(err)
+			Log.E(err)
 			return
 		}
 	})
@@ -147,12 +146,12 @@ func (s *TRPServer) read(w http.ResponseWriter) error {
 			case PacketCmd1:
 				resp, err := DecodeResponse(data)
 				if err != nil {
-					log.Println(err)
+					Log.E(err)
 					return err
 				}
 				bodyBytes, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
-					log.Println(err)
+					Log.E(err)
 					return err
 				}
 				for k, v := range resp.Header {
@@ -164,7 +163,7 @@ func (s *TRPServer) read(w http.ResponseWriter) error {
 				w.Write(bodyBytes)
 
 			case PackageError:
-				fmt.Println("错误：", string(data))
+				Log.E(string(data))
 			}
 
 			return nil
