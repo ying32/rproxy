@@ -71,7 +71,7 @@ func (s *TRPServer) httpServer() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		s.Lock()
 		defer s.Unlock()
-		LogPrintln(r.RequestURI)
+		Log.I(r.RequestURI)
 		err := s.write(r)
 		if err != nil {
 			badRequest(w)
@@ -85,7 +85,7 @@ func (s *TRPServer) httpServer() {
 			return
 		}
 	})
-	LogFatalln(http.ListenAndServe(fmt.Sprintf(":%d", s.httpPort), nil))
+	Log.EF(http.ListenAndServe(fmt.Sprintf(":%d", s.httpPort), nil))
 }
 
 func (s *TRPServer) cliProcess(conn net.Conn) error {
@@ -103,20 +103,22 @@ func (s *TRPServer) cliProcess(conn net.Conn) error {
 		return nil
 	})
 	if err != nil {
-		LogPrintln("当前客户端连接校验错误，关闭此客户端。")
+		Log.I("当前客户端连接校验错误，关闭此客户端。")
 		conn.Write(EncodeCmd(PacketVerify, []byte("failed")))
 		conn.Close()
 		return err
 	}
-	conn.Write(EncodeCmd(PacketVerify, []byte("ok")))
+	if _, err := conn.Write(EncodeCmd(PacketVerify, []byte("ok"))); err != nil {
+		return err
+	}
 
 	// 检测上次已连接的客户端，尝试断开
 	if s.conn != nil {
-		LogPrintln("服务端已有客户端连接！断开之前的:", conn.RemoteAddr())
+		Log.I("服务端已有客户端连接！断开之前的:", conn.RemoteAddr())
 		s.conn.Close()
 		s.conn = nil
 	}
-	LogPrintln("连接新的客户端：", conn.RemoteAddr())
+	Log.I("连接新的客户端：", conn.RemoteAddr())
 	keepALive(conn)
 	s.conn = conn
 	return nil

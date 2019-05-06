@@ -46,14 +46,14 @@ func (c *TRPClient) process() error {
 	}
 
 	keepALive(c.conn)
-	LogPrintln("已连接服务端。")
+	Log.I("已连接服务端。")
 
 	doHTTPClient := func(req *http.Request) ([]byte, error) {
 		rawQuery := ""
 		if req.URL.RawQuery != "" {
 			rawQuery = "?" + req.URL.RawQuery
 		}
-		LogPrintln(req.Method + "  " + req.URL.Path + rawQuery)
+		Log.I(req.Method + "  " + req.URL.Path + rawQuery)
 		// 请求本地指定的HTTP服务器
 		client := new(http.Client)
 		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
@@ -81,22 +81,19 @@ func (c *TRPClient) process() error {
 				// Decode请求
 				req, err := DecodeRequest(data, c.httpPort, false)
 				if err != nil {
-					//LogPrintln("解析请求数据失败：", err)
 					return wError(c.conn, err)
 				}
 				respBytes, err := doHTTPClient(req)
 				if err != nil {
-					//LogPrintln("请求本地客户端数据失败：", err)
 					return wError(c.conn, err)
 				}
 				_, err = c.conn.Write(respBytes)
-				//LogPrintln("需要写出字节数：", len(respBytes), "，实际写出字节数：", n)
 				if err != nil {
 					// 写出错了，这里要退出
 					return err
 				}
 			case PackageError:
-				LogPrintln("错误：", string(data))
+				Log.I(string(data))
 			}
 
 			return nil
