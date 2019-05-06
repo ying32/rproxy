@@ -12,17 +12,24 @@ import (
 )
 
 type TRPServer struct {
-	tcpPort  int
-	httpPort int
+	tcpPort     int
+	httpPort    int
+	isHTTPS     bool
+	tlsCertFile string
+	tlsKeyFile  string
+
 	listener net.Listener
 	conn     net.Conn
 	sync.RWMutex
 }
 
-func NewRPServer(tcpPort, httpPort int) *TRPServer {
+func NewRPServer(tcpPort, httpPort int, isHTTPS bool, tlsCertFile, tlsKeyFile string) *TRPServer {
 	s := new(TRPServer)
 	s.tcpPort = tcpPort
 	s.httpPort = httpPort
+	s.isHTTPS = isHTTPS
+	s.tlsCertFile = tlsCertFile
+	s.tlsKeyFile = tlsKeyFile
 	return s
 }
 
@@ -70,7 +77,7 @@ func (s *TRPServer) httpServer() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		s.Lock()
 		defer s.Unlock()
-		Log.I(r.RequestURI)
+		Log.I(r.Method + " " + r.RequestURI)
 		err := s.write(r)
 		if err != nil {
 			badRequest(w)
@@ -84,7 +91,12 @@ func (s *TRPServer) httpServer() {
 			return
 		}
 	})
-	Log.EF(http.ListenAndServe(fmt.Sprintf(":%d", s.httpPort), nil))
+
+	if !s.isHTTPS {
+		Log.EF(http.ListenAndServe(fmt.Sprintf(":%d", s.httpPort), nil))
+	} else {
+		Log.EF(http.ListenAndServeTLS(fmt.Sprintf(":%d", s.httpPort), s.tlsCertFile, s.tlsKeyFile, nil))
+	}
 }
 
 func (s *TRPServer) cliProcess(conn net.Conn) error {
@@ -126,7 +138,7 @@ func (s *TRPServer) write(r *http.Request) error {
 	if s.conn == nil {
 		return errors.New("客户端未连接。")
 	}
-	reqBytes, err := EncodeRequest(r)
+	reqBytes, err := EncodeRequest(r, s.isHTTPS)
 	if err != nil {
 		return err
 	}

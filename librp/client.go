@@ -1,6 +1,7 @@
 package librp
 
 import (
+	"crypto/tls"
 	"errors"
 	"net"
 	"net/http"
@@ -56,6 +57,9 @@ func (c *TRPClient) process() error {
 		Log.I(req.Method + "  " + req.URL.Path + rawQuery)
 		// 请求本地指定的HTTP服务器
 		client := new(http.Client)
+		client.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
 		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		}
@@ -79,7 +83,8 @@ func (c *TRPClient) process() error {
 			switch cmd {
 			case PacketCmd1:
 				// Decode请求
-				req, err := DecodeRequest(data, c.httpPort, false)
+				isHTTPS := data[0] == 1
+				req, err := DecodeRequest(data[1:], c.httpPort, isHTTPS)
 				if err != nil {
 					return wError(c.conn, err)
 				}

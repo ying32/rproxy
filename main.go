@@ -9,11 +9,14 @@ import (
 )
 
 var (
-	tcpPort   = flag.Int("tcpport", 0, "Socket连接或者监听的端口")
-	httpPort  = flag.Int("httpport", 0, "当mode为server时为服务端监听端口，当为mode为client时为转发至本地客户端的端口")
-	rpMode    = flag.String("mode", "client", "启动模式，可选为client、server")
-	svrAddr   = flag.String("svraddr", "127.0.0.1", "当mode为client时有效，为连接服务器的地址")
-	verifyKey = flag.String("vkey", "", "用作客户端与服务端连接时的校验")
+	tcpPort     = flag.Int("tcpport", 0, "Socket连接或者监听的端口")
+	httpPort    = flag.Int("httpport", 0, "当mode为server时为服务端监听端口，当为mode为client时为转发至本地客户端的端口")
+	rpMode      = flag.String("mode", "client", "启动模式，可选为client、server")
+	svrAddr     = flag.String("svraddr", "127.0.0.1", "当mode为client时有效，为连接服务器的地址")
+	verifyKey   = flag.String("vkey", "", "用作客户端与服务端连接时的校验")
+	isHTTPS     = flag.Bool("ishttps", false, "当模式为server时httpPort端口是否用作HTTPS监听")
+	tlsCertFile = flag.String("tlscertfile", "", "当ishttps为true时，所需求的TLS证书文件")
+	tlsKeyFile  = flag.String("tlskeyfile", "", "当ishttps为true时，所需求的TLS密匙文件")
 )
 
 func main() {
@@ -33,13 +36,16 @@ func main() {
 	if *rpMode == "server" && *tcpPort == *httpPort {
 		Log.EF("tcp端口与http端口不能为同一个。")
 	}
+	if *isHTTPS && (*tlsCertFile == "" || *tlsKeyFile == "") && *rpMode == "server" {
+		Log.EF("当为HTTPS时，TLS证书不能为空。")
+	}
 
 	InitVerifyKey(*verifyKey)
 
 	if *rpMode == "client" {
 	retry:
 		Log.I("客户端启动，连接服务器：", *svrAddr, "， 端口：", *tcpPort)
-		Log.I("转发至本地HTTP端口：", *httpPort)
+		Log.I("转发至本地HTTP(S)端口：", *httpPort)
 		cli := NewRPClient(fmt.Sprintf("%s:%d", *svrAddr, *tcpPort), *httpPort)
 		if err := cli.Start(); err != nil {
 			Log.E(err)
@@ -51,8 +57,11 @@ func main() {
 		defer cli.Close()
 	} else if *rpMode == "server" {
 		Log.I("TCP服务端已启动，端口：", *tcpPort)
-		Log.I("HTTP服务端已开启，端口：", *httpPort)
-		svr := NewRPServer(*tcpPort, *httpPort)
+		if *isHTTPS {
+			Log.I("当前HTTP服务为HTTPS")
+		}
+		Log.I("HTTP(S)服务端已开启，端口：", *httpPort)
+		svr := NewRPServer(*tcpPort, *httpPort, *isHTTPS, *tlsCertFile, *tlsKeyFile)
 		if err := svr.Start(); err != nil {
 			Log.EF(err)
 		}

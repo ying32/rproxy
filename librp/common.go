@@ -26,3 +26,10 @@ func IPStr(conn net.Conn) string {
 	}
 	return ip[:i]
 }
+
+func IIfStr(b bool, aTrue, aFalse string) string {
+	if b {
+		return aTrue
+	}
+	return aFalse
+}

@@ -87,32 +87,38 @@ func EncodeVerifyFailed() []byte {
 }
 
 // 将request 的处理
-func EncodeRequest(r *http.Request) ([]byte, error) {
+func EncodeRequest(r *http.Request, isHTTPS bool) ([]byte, error) {
 	reqBytes, err := httputil.DumpRequest(r, true)
 	if err != nil {
 		return nil, err
 	}
-	// 判断是否为http或者https的标识1字节
-	//binary.Write(raw, binary.LittleEndian, bool(r.URL.Scheme == "https"))
-	return EncodeCmd(PacketCmd1, reqBytes), err
+	buff := bytes.NewBuffer([]byte{})
+	if isHTTPS {
+		buff.WriteByte(1)
+	} else {
+		buff.WriteByte(0)
+	}
+	buff.Write(reqBytes)
+	return EncodeCmd(PacketCmd1, buff.Bytes()), err
 }
 
 // 将字节转为request
 func DecodeRequest(data []byte, port int, isHttps bool) (*http.Request, error) {
-	if len(data) <= 100 {
-		return nil, errors.New("待解码的字节长度太小")
-	}
 	req, err := http.ReadRequest(bufio.NewReader(bytes.NewReader(data)))
 	if err != nil {
 		return nil, err
 	}
 	req.Host = "127.0.0.1"
-	if port != 80 {
-		req.Host += ":" + strconv.Itoa(port)
-	}
 	scheme := "http"
 	if isHttps {
 		scheme = "https"
+		if port != 443 {
+			req.Host += ":" + strconv.Itoa(port)
+		}
+	} else {
+		if port != 80 {
+			req.Host += ":" + strconv.Itoa(port)
+		}
 	}
 	req.URL, _ = url.Parse(fmt.Sprintf("%s://%s%s", scheme, req.Host, req.RequestURI))
 	req.RequestURI = ""
