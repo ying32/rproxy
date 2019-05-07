@@ -1,55 +1,57 @@
-// +build gui
-
+// 由res2go自动生成，不要编辑。
 package main
 
 import (
-	"github.com/ying32/govcl/vcl"
+    "github.com/ying32/govcl/vcl"
 )
 
 type TMainForm struct {
-	*vcl.TForm
-	StatusBar1       *vcl.TStatusBar
-	Panel1           *vcl.TPanel
-	GPBase           *vcl.TGroupBox
-	Label1           *vcl.TLabel
-	Label2           *vcl.TLabel
-	Label3           *vcl.TLabel
-	Label7           *vcl.TLabel
-	SpinTCPPort      *vcl.TSpinEdit
-	SpinHTTPPort     *vcl.TSpinEdit
-	ChkIsZip         *vcl.TCheckBox
-	EditVerifyKey    *vcl.TEdit
-	BtnRandKey       *vcl.TButton
-	BtnSaveCfg       *vcl.TButton
-	BtnLoadCfg       *vcl.TButton
-	ChkAutoReconnect *vcl.TCheckBox
-	BtnNewCfg        *vcl.TButton
-	EditSvrAddr      *vcl.TEdit
-	GPTLS            *vcl.TGroupBox
-	Label4           *vcl.TLabel
-	Label5           *vcl.TLabel
-	Label6           *vcl.TLabel
-	BtnCAOpen        *vcl.TSpeedButton
-	BtnCertOpen      *vcl.TSpeedButton
-	BtnKeyOpen       *vcl.TSpeedButton
-	EditTLSCAFile    *vcl.TEdit
-	EditTLSCertFile  *vcl.TEdit
-	EditTLSKeyFile   *vcl.TEdit
-	Panel2           *vcl.TPanel
-	BtnStart         *vcl.TButton
-	BtnStop          *vcl.TButton
-	ChkIsHttps       *vcl.TCheckBox
-	DlgSaveCfg       *vcl.TSaveDialog
-	DlgOpen          *vcl.TOpenDialog
-	ActionList1      *vcl.TActionList
-	ActStart         *vcl.TAction
-	ActStop          *vcl.TAction
+    *vcl.TForm
+    StatusBar1       *vcl.TStatusBar
+    Panel1           *vcl.TPanel
+    GPBase           *vcl.TGroupBox
+    Label1           *vcl.TLabel
+    Label2           *vcl.TLabel
+    Label3           *vcl.TLabel
+    Label7           *vcl.TLabel
+    SpinTCPPort      *vcl.TSpinEdit
+    SpinHTTPPort     *vcl.TSpinEdit
+    ChkIsZip         *vcl.TCheckBox
+    EditVerifyKey    *vcl.TEdit
+    BtnRandKey       *vcl.TButton
+    BtnSaveCfg       *vcl.TButton
+    BtnLoadCfg       *vcl.TButton
+    ChkAutoReconnect *vcl.TCheckBox
+    BtnNewCfg        *vcl.TButton
+    EditSvrAddr      *vcl.TEdit
+    GPTLS            *vcl.TGroupBox
+    Label4           *vcl.TLabel
+    Label5           *vcl.TLabel
+    Label6           *vcl.TLabel
+    BtnCAOpen        *vcl.TSpeedButton
+    BtnCertOpen      *vcl.TSpeedButton
+    BtnKeyOpen       *vcl.TSpeedButton
+    EditTLSCAFile    *vcl.TEdit
+    EditTLSCertFile  *vcl.TEdit
+    EditTLSKeyFile   *vcl.TEdit
+    Panel2           *vcl.TPanel
+    BtnStart         *vcl.TButton
+    BtnStop          *vcl.TButton
+    ChkIsHttps       *vcl.TCheckBox
+    DlgSaveCfg       *vcl.TSaveDialog
+    DlgOpen          *vcl.TOpenDialog
+    ActionList1      *vcl.TActionList
+    ActStart         *vcl.TAction
+    ActStop          *vcl.TAction
 
-	//::private::
-	TMainFormFields
+    //::private::
+    TMainFormFields
 }
 
 var MainForm *TMainForm
+
+
+
 
 // 以字节形式加载
 // vcl.Application.CreateForm(mainFormBytes, &MainForm)
