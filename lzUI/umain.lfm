@@ -1,12 +1,12 @@
 object MainForm: TMainForm
   Left = 887
-  Height = 473
+  Height = 503
   Top = 547
   Width = 631
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'rproxy客户端'
-  ClientHeight = 473
+  ClientHeight = 503
   ClientWidth = 631
   DesignTimePPI = 120
   Position = poScreenCenter
@@ -14,18 +14,18 @@ object MainForm: TMainForm
   object StatusBar1: TStatusBar
     Left = 0
     Height = 29
-    Top = 444
+    Top = 474
     Width = 631
     Panels = <>
   end
   object Panel1: TPanel
     Left = 0
-    Height = 444
+    Height = 474
     Top = 0
     Width = 631
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 444
+    ClientHeight = 474
     ClientWidth = 631
     TabOrder = 1
     object GPBase: TGroupBox
@@ -38,7 +38,7 @@ object MainForm: TMainForm
       TabOrder = 0
       object Label1: TLabel
         Left = 21
-        Height = 19
+        Height = 23
         Top = 10
         Width = 176
         AutoSize = False
@@ -47,16 +47,16 @@ object MainForm: TMainForm
       end
       object Label2: TLabel
         Left = 21
-        Height = 19
-        Top = 47
+        Height = 25
+        Top = 46
         Width = 176
         AutoSize = False
         Caption = '转发至本地的HTTP(S)端口：'
         ParentColor = False
       end
       object Label3: TLabel
-        Left = 23
-        Height = 16
+        Left = 21
+        Height = 23
         Top = 121
         Width = 87
         AutoSize = False
@@ -64,8 +64,8 @@ object MainForm: TMainForm
         ParentColor = False
       end
       object Label7: TLabel
-        Left = 22
-        Height = 16
+        Left = 21
+        Height = 22
         Top = 83
         Width = 89
         AutoSize = False
@@ -95,7 +95,7 @@ object MainForm: TMainForm
         Value = 8286
       end
       object ChkIsZip: TCheckBox
-        Left = 23
+        Left = 21
         Height = 24
         Top = 157
         Width = 106
@@ -111,28 +111,28 @@ object MainForm: TMainForm
         TabOrder = 3
       end
       object BtnRandKey: TButton
-        Left = 301
-        Height = 24
-        Top = 119
+        Left = 299
+        Height = 27
+        Top = 117
         Width = 46
         Caption = '随机'
         OnClick = BtnRandKeyClick
         TabOrder = 4
       end
       object BtnSaveCfg: TButton
-        Left = 500
-        Height = 25
-        Top = 77
-        Width = 75
+        Left = 492
+        Height = 31
+        Top = 79
+        Width = 83
         Caption = '保存配置'
         OnClick = BtnSaveCfgClick
         TabOrder = 5
       end
       object BtnLoadCfg: TButton
-        Left = 500
-        Height = 25
+        Left = 492
+        Height = 31
         Top = 7
-        Width = 75
+        Width = 83
         Caption = '载入配置'
         OnClick = BtnLoadCfgClick
         TabOrder = 6
@@ -147,10 +147,10 @@ object MainForm: TMainForm
         TabOrder = 7
       end
       object BtnNewCfg: TButton
-        Left = 500
-        Height = 25
+        Left = 492
+        Height = 31
         Top = 43
-        Width = 75
+        Width = 83
         Caption = '新建配置'
         OnClick = BtnNewCfgClick
         TabOrder = 8
@@ -165,16 +165,17 @@ object MainForm: TMainForm
     end
     object GPTLS: TGroupBox
       Left = 16
-      Height = 161
+      Height = 201
       Top = 239
       Width = 599
-      ClientHeight = 136
+      ClientHeight = 176
       ClientWidth = 595
       TabOrder = 1
+      OnClick = GPTLSClick
       object Label4: TLabel
         Left = 21
-        Height = 20
-        Top = 15
+        Height = 22
+        Top = 52
         Width = 107
         AutoSize = False
         Caption = 'TLS CA根证书：'
@@ -182,8 +183,8 @@ object MainForm: TMainForm
       end
       object Label5: TLabel
         Left = 21
-        Height = 21
-        Top = 60
+        Height = 23
+        Top = 96
         Width = 101
         AutoSize = False
         Caption = 'TLS Cert文件：'
@@ -191,95 +192,98 @@ object MainForm: TMainForm
       end
       object Label6: TLabel
         Left = 21
-        Height = 21
-        Top = 99
+        Height = 23
+        Top = 136
         Width = 107
         AutoSize = False
         Caption = 'TLS Key文件：'
         ParentColor = False
       end
-      object BtnCAOpen: TSpeedButton
-        Left = 538
-        Height = 22
-        Top = 13
-        Width = 23
+      object BtnCAOpen: TButton
+        Left = 541
+        Height = 28
+        Top = 48
+        Width = 30
         Caption = '...'
         OnClick = BtnCAOpenClick
+        TabOrder = 3
       end
-      object BtnCertOpen: TSpeedButton
-        Left = 538
-        Height = 22
-        Top = 58
-        Width = 23
+      object BtnCertOpen: TButton
+        Left = 541
+        Height = 28
+        Top = 92
+        Width = 30
         Caption = '...'
         OnClick = BtnCertOpenClick
+        TabOrder = 4
       end
-      object BtnKeyOpen: TSpeedButton
-        Left = 538
-        Height = 22
-        Top = 98
-        Width = 23
+      object BtnKeyOpen: TButton
+        Left = 541
+        Height = 28
+        Top = 133
+        Width = 30
         Caption = '...'
         OnClick = BtnKeyOpenClick
+        TabOrder = 5
       end
       object EditTLSCAFile: TEdit
-        Left = 123
+        Left = 126
         Height = 28
-        Top = 12
+        Top = 49
         Width = 412
         ReadOnly = True
         TabOrder = 0
       end
       object EditTLSCertFile: TEdit
-        Left = 123
+        Left = 126
         Height = 28
-        Top = 56
+        Top = 93
         Width = 412
         ReadOnly = True
         TabOrder = 1
       end
       object EditTLSKeyFile: TEdit
-        Left = 123
+        Left = 126
         Height = 28
-        Top = 97
+        Top = 134
         Width = 412
         ReadOnly = True
         TabOrder = 2
+      end
+      object ChkIsHttps: TCheckBox
+        Left = 21
+        Height = 24
+        Top = 0
+        Width = 162
+        Caption = '转发客户端为HTTPS'
+        TabOrder = 6
       end
     end
     object Panel2: TPanel
       Left = 0
       Height = 39
-      Top = 405
+      Top = 435
       Width = 631
       Align = alBottom
       ClientHeight = 39
       ClientWidth = 631
       TabOrder = 2
       object BtnStart: TButton
-        Left = 448
-        Height = 25
-        Top = 8
-        Width = 75
+        Left = 456
+        Height = 29
+        Top = 3
+        Width = 76
         Action = ActStart
         TabOrder = 0
       end
       object BtnStop: TButton
-        Left = 526
-        Height = 25
-        Top = 8
-        Width = 75
+        Left = 534
+        Height = 29
+        Top = 3
+        Width = 76
         Action = ActStop
         TabOrder = 1
       end
-    end
-    object ChkIsHttps: TCheckBox
-      Left = 40
-      Height = 24
-      Top = 239
-      Width = 162
-      Caption = '转发客户端为HTTPS'
-      TabOrder = 3
     end
   end
   object DlgSaveCfg: TSaveDialog
@@ -289,12 +293,12 @@ object MainForm: TMainForm
     top = 352
   end
   object DlgOpen: TOpenDialog
-    left = 424
-    top = 328
+    left = 480
+    top = 224
   end
   object ActionList1: TActionList
-    left = 520
-    top = 352
+    left = 424
+    top = 216
     object ActStart: TAction
       Caption = '启动'
       OnExecute = ActStartExecute

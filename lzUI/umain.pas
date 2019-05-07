@@ -62,6 +62,7 @@ type
     procedure BtnSaveCfgClick(Sender: TObject);
     procedure ChkAutoReconnectChange(Sender: TObject);
     procedure ChkAutoReconnectClick(Sender: TObject);
+    procedure GPTLSClick(Sender: TObject);
   private
 
   public
@@ -84,28 +85,24 @@ end;
 
 procedure TMainForm.BtnNewCfgClick(Sender: TObject);
 begin
-
+ //
 end;
 
 procedure TMainForm.BtnRandKeyClick(Sender: TObject);
 begin
-
+  //
 end;
 
 procedure TMainForm.BtnSaveCfgClick(Sender: TObject);
 begin
-
-end;
-
-procedure TMainForm.ChkAutoReconnectChange(Sender: TObject);
-begin
-
+  //
 end;
 
 procedure TMainForm.ChkAutoReconnectClick(Sender: TObject);
 begin
   //
 end;
+
 
 procedure TMainForm.BtnCAOpenClick(Sender: TObject);
 begin
@@ -162,10 +159,7 @@ begin
   //
 end;
 
-procedure TMainForm.ChkAutoReconnectChange(Sender: TObject);
-begin
 
-end;
 
 end.
 
