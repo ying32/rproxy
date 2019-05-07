@@ -236,3 +236,8 @@ func (f *TMainForm) OnBtnNewCfgClick(sender vcl.IObject) {
 	librp.Log.I("新建配置")
 	f.rpConfigFileName = ""
 }
+
+func (f *TMainForm) OnGPTLSClick(sender vcl.IObject) {
+
+}
+

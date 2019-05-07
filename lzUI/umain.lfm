@@ -30,10 +30,10 @@ object MainForm: TMainForm
     TabOrder = 1
     object GPBase: TGroupBox
       Left = 16
-      Height = 216
+      Height = 224
       Top = 8
       Width = 599
-      ClientHeight = 191
+      ClientHeight = 199
       ClientWidth = 595
       TabOrder = 0
       object Label1: TLabel
@@ -48,7 +48,7 @@ object MainForm: TMainForm
       object Label2: TLabel
         Left = 21
         Height = 25
-        Top = 46
+        Top = 51
         Width = 176
         AutoSize = False
         Caption = '转发至本地的HTTP(S)端口：'
@@ -57,7 +57,7 @@ object MainForm: TMainForm
       object Label3: TLabel
         Left = 21
         Height = 23
-        Top = 121
+        Top = 131
         Width = 87
         AutoSize = False
         Caption = '验证KEY：'
@@ -66,7 +66,7 @@ object MainForm: TMainForm
       object Label7: TLabel
         Left = 21
         Height = 22
-        Top = 83
+        Top = 90
         Width = 89
         AutoSize = False
         Caption = '服务器地址：'
@@ -77,7 +77,7 @@ object MainForm: TMainForm
         Height = 28
         Hint = '可输入1-65535'
         Top = 7
-        Width = 66
+        Width = 82
         MaxValue = 65535
         MinValue = 1
         TabOrder = 0
@@ -87,8 +87,8 @@ object MainForm: TMainForm
         Left = 206
         Height = 28
         Hint = '可输入1-65535'
-        Top = 43
-        Width = 66
+        Top = 48
+        Width = 82
         MaxValue = 65535
         MinValue = 1
         TabOrder = 1
@@ -97,7 +97,7 @@ object MainForm: TMainForm
       object ChkIsZip: TCheckBox
         Left = 21
         Height = 24
-        Top = 157
+        Top = 167
         Width = 106
         Caption = '开启ZIP压缩'
         TabOrder = 2
@@ -105,7 +105,7 @@ object MainForm: TMainForm
       object EditVerifyKey: TEdit
         Left = 112
         Height = 28
-        Top = 118
+        Top = 128
         Width = 186
         ReadOnly = True
         TabOrder = 3
@@ -113,7 +113,7 @@ object MainForm: TMainForm
       object BtnRandKey: TButton
         Left = 299
         Height = 27
-        Top = 117
+        Top = 127
         Width = 46
         Caption = '随机'
         OnClick = BtnRandKeyClick
@@ -140,7 +140,7 @@ object MainForm: TMainForm
       object ChkAutoReconnect: TCheckBox
         Left = 201
         Height = 24
-        Top = 157
+        Top = 167
         Width = 219
         Caption = '与服务器连接断开后自动重连'
         OnClick = ChkAutoReconnectClick
@@ -158,7 +158,7 @@ object MainForm: TMainForm
       object EditSvrAddr: TEdit
         Left = 112
         Height = 28
-        Top = 80
+        Top = 87
         Width = 234
         TabOrder = 9
       end
@@ -253,7 +253,7 @@ object MainForm: TMainForm
       object ChkIsHttps: TCheckBox
         Left = 21
         Height = 24
-        Top = 0
+        Top = 8
         Width = 162
         Caption = '转发客户端为HTTPS'
         TabOrder = 6
