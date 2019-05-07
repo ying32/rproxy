@@ -61,6 +61,7 @@ type
     procedure BtnRandKeyClick(Sender: TObject);
     procedure BtnSaveCfgClick(Sender: TObject);
     procedure ChkAutoReconnectChange(Sender: TObject);
+    procedure ChkAutoReconnectClick(Sender: TObject);
   private
 
   public
@@ -99,6 +100,11 @@ end;
 procedure TMainForm.ChkAutoReconnectChange(Sender: TObject);
 begin
 
+end;
+
+procedure TMainForm.ChkAutoReconnectClick(Sender: TObject);
+begin
+  //
 end;
 
 procedure TMainForm.BtnCAOpenClick(Sender: TObject);
@@ -158,7 +164,7 @@ end;
 
 procedure TMainForm.ChkAutoReconnectChange(Sender: TObject);
 begin
-  //
+
 end;
 
 end.

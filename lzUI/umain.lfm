@@ -143,7 +143,7 @@ object MainForm: TMainForm
         Top = 157
         Width = 219
         Caption = '与服务器连接断开后自动重连'
-        OnChange = ChkAutoReconnectChange
+        OnClick = ChkAutoReconnectClick
         TabOrder = 7
       end
       object BtnNewCfg: TButton

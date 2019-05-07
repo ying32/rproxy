@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -25,6 +26,7 @@ type TMainFormFields struct {
 }
 
 func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
+	fmt.Println("Caption:", f.Caption())
 	f.ScreenCenter()
 	rand.Seed(time.Now().Unix())
 
