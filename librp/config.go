@@ -4,7 +4,6 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"io/ioutil"
-	"os"
 )
 
 // 配置文件，一个json文件，可包含客户端和服务端配置
@@ -38,11 +37,19 @@ func LoadConfig(fileName string, cfg *TRProxyConfig) error {
 	return json.Unmarshal(bs, cfg)
 }
 
-func GenDefConfig() error {
-	v := TRProxyConfig{}
-	bs, err := json.MarshalIndent(v, "", "\t")
+func SaveConfig(fileName string, cfg *TRProxyConfig) error {
+	bs, err := json.MarshalIndent(cfg, "", "\t")
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(ExtractFilePath(os.Args[0])+"config.cfg", bs, 0666)
+	return ioutil.WriteFile(fileName, bs, 0666)
 }
+
+//func GenDefConfig() error {
+//	v := TRProxyConfig{}
+//	bs, err := json.MarshalIndent(v, "", "\t")
+//	if err != nil {
+//		return err
+//	}
+//	return ioutil.WriteFile(ExtractFilePath(os.Args[0])+"config.cfg", bs, 0666)
+//}

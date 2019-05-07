@@ -27,6 +27,9 @@ func SetConsoleTextAttribute(hConsoleOutput uintptr, wAttributes uint16) bool {
 }
 
 func textColor(cr uint16) {
+	if IsGUI {
+		return
+	}
 	if windowsConsoleHandle <= 0 {
 		return
 	}

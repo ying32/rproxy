@@ -14,16 +14,45 @@ import (
 
 var (
 	// 全局配置文件
-	conf *TRProxyConfig
+	conf = initConfig()
 )
+
+const (
+	CLIENT = "client"
+	SERVER = "server"
+)
+
+func initConfig() *TRProxyConfig {
+	cfg := new(TRProxyConfig)
+	if cfg.certPool == nil {
+		cfg.certPool = x509.NewCertPool()
+	}
+	return cfg
+}
 
 // 设置配置文件
 func SetConfig(cfg *TRProxyConfig) {
-	conf = cfg
-	conf.certPool = x509.NewCertPool()
+
+	// 复制字段
+	conf.TCPPort = cfg.TCPPort
+	conf.VerifyKey = cfg.VerifyKey
+	conf.IsHTTPS = cfg.IsHTTPS
+	conf.TLSCAFile = cfg.TLSCAFile
+	conf.TLSCertFile = cfg.TLSCertFile
+	conf.TLSKeyFile = cfg.TLSKeyFile
+	conf.IsZIP = cfg.IsZIP
+	conf.Server.HTTPPort = cfg.Server.HTTPPort
+	conf.Client.SvrAddr = cfg.Client.SvrAddr
+	conf.Client.HTTPPort = cfg.Client.HTTPPort
+
 	// 初始KEY
 	conf.verifyVal = sha1.Sum([]byte("I AM A KEY:" + conf.VerifyKey))
+
 	addRootCert()
+}
+
+func GetConfig() *TRProxyConfig {
+	return conf
 }
 
 // 从 xxx.xxx.xxx.xxx:xxx格式中取出ip地址

@@ -6,8 +6,11 @@ import (
 	"os"
 )
 
-// 调试模式 输出 Log.D 字符
-var DEBUG = true
+var (
+	DEBUG          = true           // 调试模式 输出 Log.D 字符
+	IsGUI          bool             // 是否为GUI
+	LogGUICallback func(msg string) // 当IsGUI=true时，不再输出到日志，使用当前回调函数
+)
 
 type Logger struct {
 }
@@ -17,7 +20,14 @@ var Log Logger
 var std = log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile)
 
 func (l Logger) println(calldepth int, flag string, v ...interface{}) {
-	std.Output(calldepth, fmt.Sprintf("[%s]: %s", flag, fmt.Sprint(v...)))
+	msg := fmt.Sprintf("[%s]: %s", flag, fmt.Sprint(v...))
+	if IsGUI {
+		if LogGUICallback != nil {
+			LogGUICallback(msg)
+		}
+		return
+	}
+	std.Output(calldepth, msg)
 }
 
 // 警告

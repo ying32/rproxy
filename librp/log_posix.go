@@ -5,6 +5,9 @@ package librp
 import "fmt"
 
 func textColor(cr uint16) {
+	if IsGUI {
+		return
+	}
 	fmt.Print(fmt.Sprintf("\033[0;%dm", cr))
 }
 func textRed() {
