@@ -33,6 +33,7 @@
   --tlscafile    # 当ishttps为true时，所需的CA根证书文件。可为空，根据实际情况确定。  
   --tlscertfile  # 当ishttps为true时，所需求的TLS证书文件。  
   --tlskeyfile   # 当ishttps为true时，所需求的TLS密匙文件。  
+  --iszip        # 是否开启zip压缩
   --cfgfile      # 使用指定的配置文件中的参数，此时只有mode参数有效 
   ### 这个选项暂时不会开启，需要先等等
   --gui          # 在客户端中使用GUI替代命令行，只支持mode=client，默认为false。
