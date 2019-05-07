@@ -2,6 +2,7 @@ package librp
 
 import (
 	"bytes"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -12,24 +13,20 @@ import (
 )
 
 type TRPServer struct {
-	tcpPort     int
-	httpPort    int
-	isHTTPS     bool
-	tlsCertFile string
-	tlsKeyFile  string
+	tcpPort  int
+	httpPort int
+	isHTTPS  bool
 
 	listener net.Listener
 	conn     net.Conn
 	sync.RWMutex
 }
 
-func NewRPServer(tcpPort, httpPort int, isHTTPS bool, tlsCertFile, tlsKeyFile string) *TRPServer {
+func NewRPServer(tcpPort, httpPort int, isHTTPS bool) *TRPServer {
 	s := new(TRPServer)
 	s.tcpPort = tcpPort
 	s.httpPort = httpPort
 	s.isHTTPS = isHTTPS
-	s.tlsCertFile = tlsCertFile
-	s.tlsKeyFile = tlsKeyFile
 	return s
 }
 
@@ -95,7 +92,16 @@ func (s *TRPServer) httpServer() {
 	if !s.isHTTPS {
 		Log.EF(http.ListenAndServe(fmt.Sprintf(":%d", s.httpPort), nil))
 	} else {
-		Log.EF(http.ListenAndServeTLS(fmt.Sprintf(":%d", s.httpPort), s.tlsCertFile, s.tlsKeyFile, nil))
+		svr := &http.Server{
+			Addr:    fmt.Sprintf(":%d", s.httpPort),
+			Handler: nil,
+			TLSConfig: &tls.Config{
+				ClientCAs: certPool,
+				// 这个不开启。。。
+				//ClientAuth: tls.RequireAndVerifyClientCert,
+			},
+		}
+		Log.EF(svr.ListenAndServeTLS(tlsCertFile, tlsKeyFile))
 	}
 }
 
@@ -138,7 +144,7 @@ func (s *TRPServer) write(r *http.Request) error {
 	if s.conn == nil {
 		return errors.New("客户端未连接。")
 	}
-	reqBytes, err := EncodeRequest(r, s.isHTTPS)
+	reqBytes, err := EncodeRequest(r)
 	if err != nil {
 		return err
 	}

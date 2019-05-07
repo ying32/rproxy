@@ -87,19 +87,12 @@ func EncodeVerifyFailed() []byte {
 }
 
 // 将request 的处理
-func EncodeRequest(r *http.Request, isHTTPS bool) ([]byte, error) {
+func EncodeRequest(r *http.Request) ([]byte, error) {
 	reqBytes, err := httputil.DumpRequest(r, true)
 	if err != nil {
 		return nil, err
 	}
-	buff := bytes.NewBuffer([]byte{})
-	if isHTTPS {
-		buff.WriteByte(1)
-	} else {
-		buff.WriteByte(0)
-	}
-	buff.Write(reqBytes)
-	return EncodeCmd(PacketCmd1, buff.Bytes()), err
+	return EncodeCmd(PacketCmd1, reqBytes), err
 }
 
 // 将字节转为request

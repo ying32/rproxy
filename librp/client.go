@@ -10,13 +10,23 @@ import (
 type TRPClient struct {
 	svrAddr  string
 	httpPort int
+	isHTTPS  bool
 	conn     net.Conn
+	cliCert  tls.Certificate
 }
 
-func NewRPClient(svrAddr string, httpPort int) *TRPClient {
+func NewRPClient(svrAddr string, httpPort int, isHTTPS bool) *TRPClient {
 	c := new(TRPClient)
 	c.svrAddr = svrAddr
 	c.httpPort = httpPort
+	c.isHTTPS = isHTTPS
+	if tlsCertFile != "" && tlsKeyFile != "" {
+		var err error
+		c.cliCert, err = tls.LoadX509KeyPair(tlsCertFile, tlsKeyFile)
+		if err != nil {
+			Log.E(err)
+		}
+	}
 	return c
 }
 
@@ -57,9 +67,18 @@ func (c *TRPClient) process() error {
 		Log.I(req.Method + "  " + req.URL.Path + rawQuery)
 		// 请求本地指定的HTTP服务器
 		client := new(http.Client)
-		client.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		//client.Transport = &http.Transport{
+		//	TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		//}
+		if c.isHTTPS {
+			client.Transport = &http.Transport{
+				TLSClientConfig: &tls.Config{
+					RootCAs:      certPool,
+					Certificates: []tls.Certificate{c.cliCert},
+				},
+			}
 		}
+
 		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		}
@@ -83,8 +102,8 @@ func (c *TRPClient) process() error {
 			switch cmd {
 			case PacketCmd1:
 				// Decode请求
-				isHTTPS := data[0] == 1
-				req, err := DecodeRequest(data[1:], c.httpPort, isHTTPS)
+
+				req, err := DecodeRequest(data, c.httpPort, c.isHTTPS)
 				if err != nil {
 					return wError(c.conn, err)
 				}

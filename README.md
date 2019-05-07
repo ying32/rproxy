@@ -30,7 +30,8 @@
   --svraddr      # 当mode为client时有效，为连接服务器的地址，不需要填写端口。    
   --vkey         # 客户端与服务端建立连接时校验的加密key，简单的。  
   ### 以下三个参数为v0.6版本之后的，只应用于mode为server时 
-  --ishttps      # 当模式为server时httpPort端口是否用作HTTPS监听，默认为false。    
+  --ishttps      # httpPort端口是否只用作HTTPS监听，默认为false。    
+  --tlscafile    # 当ishttps为true时，所需的CA根证书文件
   --tlscertfile  # 当ishttps为true时，所需求的TLS证书文件  
   --tlskeyfile   # 当ishttps为true时，所需求的TLS密匙文件  
 ```
@@ -43,16 +44,16 @@
 rproxy --tcpport=8285 --httpport=8286 --mode="server" --vkey="DKibZF5TXvic1g3kY" 
 
 # 客户端
-rproxy --tcpport=8285 --httpport=8080 --mode="client" --svraddr="127.0.0.1" --vkey="DKibZF5TXvic1g3kY"
+rproxy --tcpport=8285 --httpport=8080 --svraddr="127.0.0.1" --vkey="DKibZF5TXvic1g3kY"
 ```  
 
 * HTTPS
 ```bash
 # 服务端
-rproxy --tcpport=8285 --httpport=8286 --mode="server" --ishttps=true --tlscertfile="./Sample/cert.pem" --tlskeyfile="./Sample/key.pem" --vkey="DKibZF5TXvic1g3kY"
+rproxy --tcpport=8285 --httpport=8286 --mode="server" --ishttps=true --tlscafile="./cert/ca.pem" --tlscertfile="./cert/server.pem" --tlskeyfile="./cert/server.key" --vkey="DKibZF5TXvic1g3kY"
 
 # 客户端 
-rproxy --tcpport=8285 --httpport=8089 --mode="client" --svraddr="127.0.0.1" --vkey="DKibZF5TXvic1g3kY"
+rproxy --tcpport=8285 --httpport=8089 --svraddr="127.0.0.1" --ishttps=true --tlscafile="./cert/ca.pem" --tlscertfile="./cert/client.pem" --tlskeyfile="./cert/client.key" --vkey="DKibZF5TXvic1g3kY"
 ```
 
 

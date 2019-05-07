@@ -14,7 +14,8 @@ var (
 	rpMode      = flag.String("mode", "client", "启动模式，可选为client、server")
 	svrAddr     = flag.String("svraddr", "127.0.0.1", "当mode为client时有效，为连接服务器的地址")
 	verifyKey   = flag.String("vkey", "", "用作客户端与服务端连接时的校验")
-	isHTTPS     = flag.Bool("ishttps", false, "当模式为server时httpPort端口是否用作HTTPS监听")
+	isHTTPS     = flag.Bool("ishttps", false, "httpPort端口是否只用作HTTPS监听")
+	tlsCAFile   = flag.String("tlscafile", "", "当ishttps为true时，所需的CA根证书文件")
 	tlsCertFile = flag.String("tlscertfile", "", "当ishttps为true时，所需求的TLS证书文件")
 	tlsKeyFile  = flag.String("tlskeyfile", "", "当ishttps为true时，所需求的TLS密匙文件")
 )
@@ -36,8 +37,15 @@ func main() {
 	if *rpMode == "server" && *tcpPort == *httpPort {
 		Log.EF("tcp端口与http端口不能为同一个。")
 	}
-	if *isHTTPS && (*tlsCertFile == "" || *tlsKeyFile == "") && *rpMode == "server" {
+	if *isHTTPS && (*tlsCertFile == "" || *tlsKeyFile == "" || *tlsCAFile == "") {
 		Log.EF("当为HTTPS时，TLS证书不能为空。")
+	}
+
+	if *isHTTPS {
+		// 添加CA根证书
+		AddRootCert(*tlsCAFile)
+		SetTLSCertFile(*tlsCertFile)
+		SetTLSKeyFile(*tlsKeyFile)
 	}
 
 	InitVerifyKey(*verifyKey)
@@ -45,8 +53,11 @@ func main() {
 	if *rpMode == "client" {
 	retry:
 		Log.I("客户端启动，连接服务器：", *svrAddr, "， 端口：", *tcpPort)
+		if *isHTTPS {
+			Log.I("转发至HTTP服务为HTTPS")
+		}
 		Log.I("转发至本地HTTP(S)端口：", *httpPort)
-		cli := NewRPClient(fmt.Sprintf("%s:%d", *svrAddr, *tcpPort), *httpPort)
+		cli := NewRPClient(fmt.Sprintf("%s:%d", *svrAddr, *tcpPort), *httpPort, *isHTTPS)
 		if err := cli.Start(); err != nil {
 			Log.E(err)
 			// 重连
@@ -61,7 +72,7 @@ func main() {
 			Log.I("当前HTTP服务为HTTPS")
 		}
 		Log.I("HTTP(S)服务端已开启，端口：", *httpPort)
-		svr := NewRPServer(*tcpPort, *httpPort, *isHTTPS, *tlsCertFile, *tlsKeyFile)
+		svr := NewRPServer(*tcpPort, *httpPort, *isHTTPS)
 		if err := svr.Start(); err != nil {
 			Log.EF(err)
 		}
