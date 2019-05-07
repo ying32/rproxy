@@ -16,7 +16,7 @@
 
 > 1、go get github.com/ying32/rproxy  
 > 2、使用[构建命令](build)  
-> 3、参照 [命令行用例](#命令行用例) 使用 
+> 3、参照[命令行用例](#命令行用例)使用，或者使用[带GUI的客户端](#带GUI的客户端)
 
 
 ### 命令行说明   
@@ -72,6 +72,8 @@ rproxy --mode="server" --cfgfile="./conf/confighttps.cfg"
 rproxy --cfgfile="./conf/confighttps.cfg"
 ```
 
+#### 带GUI的客户端
+![client_gui.jpg](imgs/client_gui.jpg)   
 
 ### 操作系统支持  
 
