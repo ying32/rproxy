@@ -41,6 +41,10 @@ func textYellow() {
 	textColor(8 | 6) //8|6
 }
 
+func textGreen() {
+	textColor(8 | 2)
+}
+
 func textDefault() {
 	textColor(7) // 7
 }

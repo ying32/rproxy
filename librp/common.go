@@ -1,28 +1,29 @@
 package librp
 
 import (
+	"bytes"
+	"compress/zlib"
 	"crypto/sha1"
 	"crypto/x509"
+	"io"
 	"io/ioutil"
 	"net"
+	"path/filepath"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 var (
-	// 验证的值
-	verifyVal [20]byte
-
-	// CA根证书池
-	certPool    = x509.NewCertPool()
-	tlsCertFile string
-	tlsKeyFile  string
+	// 全局配置文件
+	conf *TRProxyConfig
 )
 
-// 初始验证key
-func InitVerifyKey(key string) {
-	verifyVal = sha1.Sum([]byte("I AM A KEY:" + key))
+// 设置配置文件
+func SetConfig(cfg *TRProxyConfig) {
+	conf = cfg
+	conf.certPool = x509.NewCertPool()
+	// 初始KEY
+	conf.verifyVal = sha1.Sum([]byte("I AM A KEY:" + conf.VerifyKey))
+	addRootCert()
 }
 
 // 从 xxx.xxx.xxx.xxx:xxx格式中取出ip地址
@@ -38,32 +39,59 @@ func IPStr(conn net.Conn) string {
 	return ip[:i]
 }
 
-func IIfStr(b bool, aTrue, aFalse string) string {
-	if b {
-		return aTrue
-	}
-	return aFalse
+// ExtractFilePath 提取文件名路径
+func ExtractFilePath(path string) string {
+	filename := filepath.Base(path)
+	return path[:len(path)-len(filename)]
 }
 
 // 添加CA根证书
-func AddRootCert(fileNmae string) error {
-	if fileNmae == "" {
-		return errors.New("CA根证书文件不存在。")
+func addRootCert() {
+	if !conf.IsHTTPS {
+		return
 	}
-	bs, err := ioutil.ReadFile(fileNmae)
+	if conf.TLSCAFile == "" {
+		Log.E("CA根证书文件不存在。")
+	}
+	bs, err := ioutil.ReadFile(conf.TLSCAFile)
 	if err != nil {
-		return err
+		Log.E(err)
+		return
 	}
-	if ok := certPool.AppendCertsFromPEM(bs); !ok {
-		return errors.New("添加CA根证书失败。")
+	if ok := conf.certPool.AppendCertsFromPEM(bs); !ok {
+		Log.E("添加CA根证书失败。")
 	}
-	return nil
 }
 
-func SetTLSCertFile(fileName string) {
-	tlsCertFile = fileName
+//   zlib解压缩
+func ZlibUnCompress(input []byte) ([]byte, error) {
+	var out bytes.Buffer
+	r, err := zlib.NewReader(bytes.NewReader(input))
+	if err != nil {
+		return nil, err
+	}
+	defer r.Close()
+	_, err = io.Copy(&out, r)
+	if err != nil {
+		return nil, nil
+	}
+	return out.Bytes(), nil
 }
 
-func SetTLSKeyFile(fileName string) {
-	tlsKeyFile = fileName
+//  zlib压缩
+func ZlibCompress(input []byte) ([]byte, error) {
+	var in bytes.Buffer
+	w, err := zlib.NewWriterLevel(&in, zlib.BestCompression)
+	if err != nil {
+		return nil, err
+	}
+	_, err = w.Write(input)
+	if err != nil {
+		return nil, err
+	}
+	err = w.Close()
+	if err != nil {
+		return nil, err
+	}
+	return in.Bytes(), nil
 }

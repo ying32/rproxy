@@ -13,26 +13,19 @@ import (
 )
 
 type TRPServer struct {
-	tcpPort  int
-	httpPort int
-	isHTTPS  bool
-
 	listener net.Listener
 	conn     net.Conn
 	sync.RWMutex
 }
 
-func NewRPServer(tcpPort, httpPort int, isHTTPS bool) *TRPServer {
+func NewRPServer() *TRPServer {
 	s := new(TRPServer)
-	s.tcpPort = tcpPort
-	s.httpPort = httpPort
-	s.isHTTPS = isHTTPS
 	return s
 }
 
 func (s *TRPServer) Start() error {
 	var err error
-	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", s.tcpPort))
+	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", conf.TCPPort))
 	if err != nil {
 		return err
 	}
@@ -89,19 +82,19 @@ func (s *TRPServer) httpServer() {
 		}
 	})
 
-	if !s.isHTTPS {
-		Log.EF(http.ListenAndServe(fmt.Sprintf(":%d", s.httpPort), nil))
+	if !conf.IsHTTPS {
+		Log.EF(http.ListenAndServe(fmt.Sprintf(":%d", conf.Server.HTTPPort), nil))
 	} else {
 		svr := &http.Server{
-			Addr:    fmt.Sprintf(":%d", s.httpPort),
+			Addr:    fmt.Sprintf(":%d", conf.Server.HTTPPort),
 			Handler: nil,
 			TLSConfig: &tls.Config{
-				ClientCAs: certPool,
+				ClientCAs: conf.certPool,
 				// 这个不开启。。。
 				//ClientAuth: tls.RequireAndVerifyClientCert,
 			},
 		}
-		Log.EF(svr.ListenAndServeTLS(tlsCertFile, tlsKeyFile))
+		Log.EF(svr.ListenAndServeTLS(conf.TLSCertFile, conf.TLSKeyFile))
 	}
 }
 
@@ -111,7 +104,7 @@ func (s *TRPServer) cliProcess(conn net.Conn) error {
 	err := readPacket(conn, func(cmd uint16, data []byte) error {
 		conn.SetReadDeadline(time.Time{})
 		if cmd == PacketVerify {
-			if bytes.Compare(data, verifyVal[:]) != 0 {
+			if bytes.Compare(data, conf.verifyVal[:]) != 0 {
 				return errors.New("首次连接校验证失败。")
 			}
 		} else {

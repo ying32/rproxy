@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -22,13 +23,14 @@ const (
 	PacketVerify uint16 = 1001
 	PackageError uint16 = 1002
 
-	PacketVersion uint16 = 0x01
+	PacketVersion uint16 = 0x02
 )
 
 type TPacketHead struct {
 	//Head uint8
 	Version uint16 // 2
 	Cmd     uint16 // 2
+	IsZip   uint16 // 2
 	DataLen uint32 // 4
 	//Data []byte
 	//Tail uint8
@@ -36,16 +38,16 @@ type TPacketHead struct {
 
 var (
 	// 封包头的结构长度
-	PacketHeadLen = 8
+	PacketHeadLen = getPacketHeadSize() //8
 )
 
-/*
-
-  http.ReadRequest()
-  http.ReadResponse()
-  httputil.DumpRequest()
-  httputil.DumpResponse()
-*/
+func getPacketHeadSize() (size uintptr) {
+	t := reflect.TypeOf(TPacketHead{})
+	for i := 0; i < t.NumField(); i++ {
+		size += t.Field(i).Type.Size()
+	}
+	return
+}
 
 // 编码数据
 func EncodeCmd(cmd uint16, data []byte) []byte {
@@ -53,6 +55,20 @@ func EncodeCmd(cmd uint16, data []byte) []byte {
 	head := TPacketHead{}
 	head.Version = PacketVersion
 	head.Cmd = cmd
+	head.IsZip = 0
+	if conf.IsZIP {
+		head.IsZip = 1
+
+		// 压缩数据
+		temp, err := ZlibCompress(data)
+		if err != nil {
+			Log.E(err)
+		} else {
+			Log.D("压缩，原长度：", len(data))
+			data = temp
+			Log.D("压缩，现长度：", len(data))
+		}
+	}
 	head.DataLen = uint32(len(data))
 
 	binary.Write(raw, binary.LittleEndian, PacketHead)
@@ -71,9 +87,9 @@ func DecodeHead(data []byte) *TPacketHead {
 	return head
 }
 
-// 编码验证包，为固定长度， 1 + 2 + 2 + 20 + 4 + 1 = 30byte
+// 编码验证包
 func EncodeVerify() []byte {
-	return EncodeCmd(PacketVerify, verifyVal[:])
+	return EncodeCmd(PacketVerify, conf.verifyVal[:])
 }
 
 // 验证成功回写
@@ -206,6 +222,17 @@ func readPacket(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
 					return err
 				}
 				if byteFlag[0] == PacketTail {
+					// zip解压
+					if head.IsZip == 1 {
+						temp, err := ZlibUnCompress(bodyData)
+						if err != nil {
+							Log.E(err)
+						} else {
+							Log.D("解压缩，原长度：", len(bodyData))
+							bodyData = temp
+							Log.D("解压缩，现长度：", len(bodyData))
+						}
+					}
 					return fn(head.Cmd, bodyData)
 				} else {
 					Log.E("包尾不正确")

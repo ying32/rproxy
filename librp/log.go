@@ -6,6 +6,9 @@ import (
 	"os"
 )
 
+// 调试模式 输出 Log.D 字符
+var DEBUG = true
+
 type Logger struct {
 }
 
@@ -39,4 +42,12 @@ func (l Logger) EF(v ...interface{}) {
 func (l Logger) I(v ...interface{}) {
 	textDefault()
 	l.println(3, "INFO", v...)
+}
+
+// 调试
+func (l Logger) D(v ...interface{}) {
+	if DEBUG {
+		textGreen()
+		l.println(3, "DEBUG", v...)
+	}
 }

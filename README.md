@@ -17,8 +17,7 @@
 ```
  1、go get github.com/ying32/rproxy  
  2、go build   
- 3、服务端运行runsvr.bat或者runsvr.sh    
- 4、客户端运行runcli.bat或者runcli.sh    
+ 3、参照 用例 使用  
 ```
 
 
@@ -31,29 +30,48 @@
   --vkey         # 客户端与服务端建立连接时校验的加密key，简单的。  
   ### 以下三个参数为v0.6版本之后的，只应用于mode为server时 
   --ishttps      # httpPort端口是否只用作HTTPS监听，默认为false。    
-  --tlscafile    # 当ishttps为true时，所需的CA根证书文件
-  --tlscertfile  # 当ishttps为true时，所需求的TLS证书文件  
-  --tlskeyfile   # 当ishttps为true时，所需求的TLS密匙文件  
+  --tlscafile    # 当ishttps为true时，所需的CA根证书文件。可为空，根据实际情况确定。  
+  --tlscertfile  # 当ishttps为true时，所需求的TLS证书文件。  
+  --tlskeyfile   # 当ishttps为true时，所需求的TLS密匙文件。  
+  --cfgfile      # 使用指定的配置文件中的参数，此时只有mode参数有效 
+  ### 这个选项暂时不会开启，需要先等等
+  --gui          # 在客户端中使用GUI替代命令行，只支持mode=client，默认为false。
 ```
 
 ### 用例  
 
 * HTTP：
 ```bash
+## ---- 从命令行加载主要参数 ----
 # 服务端
 rproxy --tcpport=8285 --httpport=8286 --mode="server" --vkey="DKibZF5TXvic1g3kY" 
 
 # 客户端
 rproxy --tcpport=8285 --httpport=8080 --svraddr="127.0.0.1" --vkey="DKibZF5TXvic1g3kY"
+
+## ---- 从配置文件加载主要参数 ----
+# 服务端
+rproxy --mode="server" --cfgfile="./conf/config.cfg"
+
+# 客户端
+rproxy --cfgfile="./conf/config.cfg"
 ```  
 
 * HTTPS
 ```bash
+## ---- 从命令行加载主要参数 ----
 # 服务端
 rproxy --tcpport=8285 --httpport=8286 --mode="server" --ishttps=true --tlscafile="./cert/ca.pem" --tlscertfile="./cert/server.pem" --tlskeyfile="./cert/server.key" --vkey="DKibZF5TXvic1g3kY"
 
 # 客户端 
 rproxy --tcpport=8285 --httpport=8089 --svraddr="127.0.0.1" --ishttps=true --tlscafile="./cert/ca.pem" --tlscertfile="./cert/client.pem" --tlskeyfile="./cert/client.key" --vkey="DKibZF5TXvic1g3kY"
+
+## ---- 从配置文件加载主要参数 ----
+# 服务端
+rproxy --mode="server" --cfgfile="./conf/confighttps.cfg"
+
+# 客户端
+rproxy --cfgfile="./conf/confighttps.cfg"
 ```
 
 

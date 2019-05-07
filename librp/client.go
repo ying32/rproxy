@@ -3,26 +3,21 @@ package librp
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 )
 
 type TRPClient struct {
-	svrAddr  string
-	httpPort int
-	isHTTPS  bool
-	conn     net.Conn
-	cliCert  tls.Certificate
+	conn    net.Conn
+	cliCert tls.Certificate
 }
 
-func NewRPClient(svrAddr string, httpPort int, isHTTPS bool) *TRPClient {
+func NewRPClient() *TRPClient {
 	c := new(TRPClient)
-	c.svrAddr = svrAddr
-	c.httpPort = httpPort
-	c.isHTTPS = isHTTPS
-	if tlsCertFile != "" && tlsKeyFile != "" {
+	if conf.TLSCertFile != "" && conf.TLSKeyFile != "" {
 		var err error
-		c.cliCert, err = tls.LoadX509KeyPair(tlsCertFile, tlsKeyFile)
+		c.cliCert, err = tls.LoadX509KeyPair(conf.TLSCertFile, conf.TLSKeyFile)
 		if err != nil {
 			Log.E(err)
 		}
@@ -31,7 +26,7 @@ func NewRPClient(svrAddr string, httpPort int, isHTTPS bool) *TRPClient {
 }
 
 func (c *TRPClient) Start() error {
-	conn, err := net.Dial("tcp", c.svrAddr)
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", conf.Client.SvrAddr, conf.TCPPort))
 	if err != nil {
 		return err
 	}
@@ -70,10 +65,10 @@ func (c *TRPClient) process() error {
 		//client.Transport = &http.Transport{
 		//	TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		//}
-		if c.isHTTPS {
+		if conf.IsHTTPS {
 			client.Transport = &http.Transport{
 				TLSClientConfig: &tls.Config{
-					RootCAs:      certPool,
+					RootCAs:      conf.certPool,
 					Certificates: []tls.Certificate{c.cliCert},
 				},
 			}
@@ -103,7 +98,7 @@ func (c *TRPClient) process() error {
 			case PacketCmd1:
 				// Decode请求
 
-				req, err := DecodeRequest(data, c.httpPort, c.isHTTPS)
+				req, err := DecodeRequest(data, conf.Client.HTTPPort, conf.IsHTTPS)
 				if err != nil {
 					return wError(c.conn, err)
 				}

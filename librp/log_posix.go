@@ -15,6 +15,10 @@ func textYellow() {
 	textColor(33)
 }
 
+func textGreen() {
+	textColor(32)
+}
+
 func textDefault() {
 	textColor(37)
 }
