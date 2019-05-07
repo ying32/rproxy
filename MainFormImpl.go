@@ -56,7 +56,7 @@ func (f *TMainForm) loadAppConfig() {
 		f.updateUIConfig(cfg)
 	}
 	f.autoReboot = f.appCfg.ReadBool("System", "AutoReboot", true)
-	f.ChkAutoReboot.SetChecked(f.autoReboot)
+	f.ChkAutoReconnect.SetChecked(f.autoReboot)
 }
 
 func (f *TMainForm) logCallback(msg string) {
@@ -154,8 +154,8 @@ func (f *TMainForm) OnBtnLoadCfgClick(sender vcl.IObject) {
 	}
 }
 
-func (f *TMainForm) OnChkAutoRebootClick(sender vcl.IObject) {
-	f.autoReboot = f.ChkAutoReboot.Checked()
+func (f *TMainForm) OnChkAutoReconnectClick(sender vcl.IObject) {
+	f.autoReboot = f.ChkAutoReconnect.Checked()
 	f.appCfg.WriteBool("System", "AutoReboot", f.autoReboot)
 }
 
