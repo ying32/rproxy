@@ -14,11 +14,9 @@
 
 ### 使用方法  
 
-```
- 1、go get github.com/ying32/rproxy  
- 2、go build   
- 3、参照 用例 使用  
-```
+> 1、go get github.com/ying32/rproxy  
+> 2、使用[构建命令](build)  
+> 3、参照 [命令行用例](#命令行用例) 使用 
 
 
 ### 命令行说明   
@@ -34,13 +32,12 @@
   --tlscertfile  # 当ishttps为true时，所需求的TLS证书文件。  
   --tlskeyfile   # 当ishttps为true时，所需求的TLS密匙文件。  
   --iszip        # 是否开启zip压缩
-  --cfgfile      # 使用指定的配置文件中的参数，此时只有mode参数有效 
-  ### 这个选项暂时不会开启，需要先等等
-  --gui          # 在客户端中使用GUI替代命令行，只支持mode=client，默认为false。
+  --cfgfile      # 使用指定的配置文件中的参数，此时只有mode参数有效   
 ```
 
 ### 用例  
 
+#### 命令行用例
 * HTTP：
 ```bash
 ## ---- 从命令行加载主要参数 ----
