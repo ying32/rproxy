@@ -1,3 +1,5 @@
+// +build !gui
+
 package main
 
 import (
@@ -19,7 +21,6 @@ var (
 	tlsKeyFile  = flag.String("tlskeyfile", "", "当ishttps为true时，所需求的TLS密匙文件")
 	isZip       = flag.Bool("iszip", false, "是否开启zip压缩")
 	configFile  = flag.String("cfgfile", "", "使用指定的配置文件中的参数，此时只有mode参数有效")
-	isGUI       = flag.Bool("gui", false, "在客户端中使用GUI替代命令行，只支持mode=client")
 )
 
 func main() {
@@ -38,10 +39,10 @@ func main() {
 		// 初始填充配置
 		rpConfig.TCPPort = *tcpPort
 		switch mode {
-		case "server":
+		case rp.SERVER:
 			rpConfig.Server.HTTPPort = *httpPort
 
-		case "client":
+		case rp.CLIENT:
 			rpConfig.Client.HTTPPort = *httpPort
 			rpConfig.Client.SvrAddr = *svrAddr
 		}
@@ -60,16 +61,16 @@ func main() {
 		rp.Log.EF("请输入正确的tcp端口。")
 	}
 	rPort := rpConfig.Client.HTTPPort
-	if mode == "server" {
+	if mode == rp.SERVER {
 		rPort = rpConfig.Server.HTTPPort
 	}
 	if rPort <= 0 || rPort >= 65536 {
 		rp.Log.EF("请输入正确的http端口。")
 	}
-	if mode != "client" && mode != "server" {
+	if mode != rp.CLIENT && mode != rp.SERVER {
 		rp.Log.EF("请输入正确的服务启动模式")
 	}
-	if mode == "server" && rpConfig.TCPPort == rpConfig.Server.HTTPPort {
+	if mode == rp.SERVER && rpConfig.TCPPort == rpConfig.Server.HTTPPort {
 		rp.Log.EF("tcp端口与http端口不能为同一个。")
 	}
 	if rpConfig.IsHTTPS && (rpConfig.TLSCertFile == "" || rpConfig.TLSKeyFile == "") {
@@ -81,7 +82,7 @@ func main() {
 
 	switch mode {
 
-	case "server":
+	case rp.SERVER:
 		rp.Log.I("TCP服务端已启动，端口：", rpConfig.TCPPort)
 		if rpConfig.IsHTTPS {
 			rp.Log.I("当前HTTP服务为HTTPS")
@@ -93,7 +94,7 @@ func main() {
 		}
 		defer svr.Close()
 
-	case "client":
+	case rp.CLIENT:
 	retry:
 		rp.Log.I("客户端启动，连接服务器：", rpConfig.Client.SvrAddr, "， 端口：", rpConfig.TCPPort)
 		if rpConfig.IsHTTPS {
