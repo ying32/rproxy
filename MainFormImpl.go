@@ -110,6 +110,24 @@ func (f *TMainForm) updateUIConfig(cfg *librp.TRProxyConfig) {
 }
 
 func (f *TMainForm) saveUIConfig() {
+
+	if f.EditVerifyKey.Text() == "" {
+		f.EditVerifyKey.SetFocus()
+		vcl.ShowMessage("必须输入一个验证的key")
+		return
+	}
+	if f.EditSvrAddr.Text() == "" {
+		f.EditSvrAddr.SetFocus()
+		vcl.ShowMessage("要连接的服务器地址不能为空")
+		return
+	}
+	if f.ChkIsHttps.Checked() {
+		if f.EditTLSCertFile.Text() == "" || f.EditTLSKeyFile.Text() == "" {
+			vcl.ShowMessage("当为HTTPS时，TLS证书不能为空。")
+			return
+		}
+	}
+
 	cfg := new(librp.TRProxyConfig)
 	// 获取服务端的
 	cfg.Server = librp.GetConfig().Server
@@ -168,12 +186,18 @@ func (f *TMainForm) OnActStartExecute(sender vcl.IObject) {
 			err := f.rpClient.Start()
 			if err != nil {
 				librp.Log.I("5秒后重新连接...")
-				time.Sleep(time.Second * 5)
+				for i := 0; i < 5; i++ {
+					if !f.started {
+						break
+					}
+					time.Sleep(time.Second * 1)
+				}
 				if !f.autoReboot {
 					break
 				}
 			}
 		}
+		librp.Log.I("已停止")
 		vcl.ThreadSync(func() {
 			f.BtnStop.Click()
 		})
@@ -202,7 +226,6 @@ func (f *TMainForm) OnActStopExecute(sender vcl.IObject) {
 	f.setControlState(true)
 
 	f.rpClient.Close()
-	librp.Log.I("已停止")
 }
 
 func (f *TMainForm) OnActStopUpdate(sender vcl.IObject) {
