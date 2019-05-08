@@ -120,7 +120,7 @@ func (s *TRPServer) httpServer() {
 		Log.EF(s.httpSvr.ListenAndServe())
 	} else {
 
-		Log.EF(s.httpSvr.ListenAndServeTLS(conf.TLSCertFile, conf.TLSKeyFile))
+		Log.EF(s.httpSvr.ListenAndServeTLS(conf.Server.TLSCertFile, conf.Server.TLSKeyFile))
 	}
 }
 

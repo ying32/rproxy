@@ -39,16 +39,21 @@ func SetConfig(cfg *TRProxyConfig) {
 	conf.VerifyKey = cfg.VerifyKey
 	conf.IsHTTPS = cfg.IsHTTPS
 	conf.TLSCAFile = cfg.TLSCAFile
-	conf.TLSCertFile = cfg.TLSCertFile
-	conf.TLSKeyFile = cfg.TLSKeyFile
 	conf.IsZIP = cfg.IsZIP
+
+	// server
+	conf.Server.TLSCertFile = cfg.Server.TLSCertFile
+	conf.Server.TLSKeyFile = cfg.Server.TLSKeyFile
 	conf.Server.HTTPPort = cfg.Server.HTTPPort
+	// client
 	conf.Client.SvrAddr = cfg.Client.SvrAddr
 	conf.Client.HTTPPort = cfg.Client.HTTPPort
+	conf.Client.TLSCertFile = cfg.Client.TLSCertFile
+	conf.Client.TLSKeyFile = cfg.Client.TLSKeyFile
 
-	if conf.TLSCertFile != "" && conf.TLSKeyFile != "" {
+	if conf.Client.TLSCertFile != "" && conf.Client.TLSKeyFile != "" {
 		var err error
-		conf.cliCert, err = tls.LoadX509KeyPair(conf.TLSCertFile, conf.TLSKeyFile)
+		conf.cliCert, err = tls.LoadX509KeyPair(conf.Client.TLSCertFile, conf.Client.TLSKeyFile)
 		if err != nil {
 			Log.E(err)
 		}

@@ -41,16 +41,17 @@ func main() {
 		switch mode {
 		case rp.SERVER:
 			rpConfig.Server.HTTPPort = *httpPort
-
+			rpConfig.Server.TLSCertFile = *tlsCertFile
+			rpConfig.Server.TLSKeyFile = *tlsKeyFile
 		case rp.CLIENT:
 			rpConfig.Client.HTTPPort = *httpPort
 			rpConfig.Client.SvrAddr = *svrAddr
+			rpConfig.Client.TLSCertFile = *tlsCertFile
+			rpConfig.Client.TLSKeyFile = *tlsKeyFile
 		}
 		rpConfig.VerifyKey = *verifyKey
 		rpConfig.IsHTTPS = *isHTTPS
 		rpConfig.TLSCAFile = *tlsCAFile
-		rpConfig.TLSCertFile = *tlsCertFile
-		rpConfig.TLSKeyFile = *tlsKeyFile
 		rpConfig.IsZIP = *isZip
 	}
 
@@ -73,8 +74,12 @@ func main() {
 	if mode == rp.SERVER && rpConfig.TCPPort == rpConfig.Server.HTTPPort {
 		rp.Log.EF("tcp端口与http端口不能为同一个。")
 	}
-	if rpConfig.IsHTTPS && (rpConfig.TLSCertFile == "" || rpConfig.TLSKeyFile == "") {
-		rp.Log.EF("当为HTTPS时，TLS证书不能为空。")
+	if rpConfig.IsHTTPS {
+		if mode == rp.SERVER && (rpConfig.Server.TLSCertFile == "" || rpConfig.Server.TLSKeyFile == "") {
+			rp.Log.EF("当为HTTPS时，服务端TLS证书不能为空。")
+		} else if mode == rp.CLIENT && (rpConfig.Client.TLSCertFile == "" || rpConfig.Client.TLSKeyFile == "") {
+			rp.Log.EF("当为HTTPS时，客户端TLS证书不能为空。")
+		}
 	}
 
 	// 初始配置文件

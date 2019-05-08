@@ -16,7 +16,11 @@ import (
 	"github.com/ying32/rproxy/librp"
 )
 
-const randStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+const (
+	randStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	SERVER  = 1
+	CLIENT  = 0
+)
 
 //::private::
 type TMainFormFields struct {
@@ -35,6 +39,7 @@ func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
 
 	f.ScreenCenter()
 	f.PageControl1.SetActivePageIndex(0)
+	f.PageControl2.SetActivePageIndex(0)
 
 	f.started = false
 	f.appCfg = vcl.NewIniFile(rtl.ExtractFilePath(vcl.Application.ExeName()) + "app.conf")
@@ -54,7 +59,7 @@ func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
 func loadMainIconFromStream(outIcon *vcl.TIcon) {
 	if outIcon.IsValid() {
 		mem := vcl.NewMemoryStreamFromBytes(mainIconBytes)
-		defer mem.Free() // 不要在阻塞的时候使用defer不然会一直到阻塞结束才释放，这里使用是因为这个函数结束了就释放了
+		defer mem.Free()
 		mem.SetPosition(0)
 		outIcon.LoadFromStream(mem)
 	}
@@ -79,14 +84,20 @@ func (f *TMainForm) loadAppConfig() {
 	}
 	f.autoReboot = f.appCfg.ReadBool("System", "AutoReboot", true)
 	f.ChkAutoReconnect.SetChecked(f.autoReboot)
+
 	f.modeIndex = f.appCfg.ReadInteger("System", "ModeIndex", 0)
 	f.setRPMode(f.modeIndex)
+
+	f.SpinMaxLogLine.SetValue(f.appCfg.ReadInteger("System", "MaxLogLine", 5000))
+
 	f.updateCaption()
 }
 
 func (f *TMainForm) logCallback(msg string) {
 	vcl.ThreadSync(func() {
-		//f.StatusBar1.SetSimpleText(msg)
+		if f.LstLogs.Count() > f.SpinMaxLogLine.Value() {
+			f.LstLogs.Clear()
+		}
 		f.LstLogs.Items().Add(msg)
 	})
 }
@@ -143,21 +154,9 @@ func (f *TMainForm) OnBtnRandKeyClick(sender vcl.IObject) {
 	f.EditVerifyKey.SetText(string(randKey))
 }
 
-func (f *TMainForm) OnBtnKeyOpenClick(sender vcl.IObject) {
-	if f.DlgOpen.Execute() {
-		f.EditTLSKeyFile.SetText(f.DlgOpen.FileName())
-	}
-}
-
 func (f *TMainForm) OnBtnCAOpenClick(sender vcl.IObject) {
 	if f.DlgOpen.Execute() {
 		f.EditTLSCAFile.SetText(f.DlgOpen.FileName())
-	}
-}
-
-func (f *TMainForm) OnBtnCertOpenClick(sender vcl.IObject) {
-	if f.DlgOpen.Execute() {
-		f.EditTLSCertFile.SetText(f.DlgOpen.FileName())
 	}
 }
 
@@ -171,14 +170,17 @@ func (f *TMainForm) updateUIConfig(cfg *librp.TRProxyConfig) {
 	f.ChkIsZip.SetChecked(cfg.IsZIP)
 	f.ChkIsHttps.SetChecked(cfg.IsHTTPS)
 	f.EditTLSCAFile.SetText(cfg.TLSCAFile)
-	f.EditTLSCertFile.SetText(cfg.TLSCertFile)
-	f.EditTLSKeyFile.SetText(cfg.TLSKeyFile)
 
+	// client
 	f.SpinCliHTTPPort.SetValue(int32(cfg.Client.HTTPPort))
 	f.EditSvrAddr.SetText(cfg.Client.SvrAddr)
+	f.EditTLSCliCertFile.SetText(cfg.Client.TLSCertFile)
+	f.EditTLSCliKeyFile.SetText(cfg.Client.TLSKeyFile)
 
+	// server
 	f.SpinSvrHTTPPort.SetValue(int32(cfg.Server.HTTPPort))
-
+	f.EditTLSSvrCertFile.SetText(cfg.Server.TLSCertFile)
+	f.EditTLSSvrKeyFile.SetText(cfg.Server.TLSKeyFile)
 }
 
 func (f *TMainForm) saveUIConfig() {
@@ -194,8 +196,14 @@ func (f *TMainForm) saveUIConfig() {
 		return
 	}
 	if f.ChkIsHttps.Checked() {
-		if f.EditTLSCertFile.Text() == "" || f.EditTLSKeyFile.Text() == "" {
-			vcl.ShowMessage("当为HTTPS时，TLS证书不能为空。")
+
+		if f.EditTLSCliCertFile.Text() == "" || f.EditTLSCliKeyFile.Text() == "" {
+			vcl.ShowMessage("当为HTTPS时，客户端TLS证书不能为空。")
+			return
+		}
+
+		if f.EditTLSSvrCertFile.Text() == "" || f.EditTLSSvrKeyFile.Text() == "" {
+			vcl.ShowMessage("当为HTTPS时，服务端TLS证书不能为空。")
 			return
 		}
 	}
@@ -207,13 +215,17 @@ func (f *TMainForm) saveUIConfig() {
 	cfg.IsZIP = f.ChkIsZip.Checked()
 	cfg.IsHTTPS = f.ChkIsHttps.Checked()
 	cfg.TLSCAFile = f.EditTLSCAFile.Text()
-	cfg.TLSCertFile = f.EditTLSCertFile.Text()
-	cfg.TLSKeyFile = f.EditTLSKeyFile.Text()
 
+	// client
 	cfg.Client.HTTPPort = int(f.SpinCliHTTPPort.Value())
 	cfg.Client.SvrAddr = f.EditSvrAddr.Text()
+	cfg.Client.TLSCertFile = f.EditTLSCliCertFile.Text()
+	cfg.Client.TLSKeyFile = f.EditTLSCliKeyFile.Text()
 
+	// server
 	cfg.Server.HTTPPort = int(f.SpinSvrHTTPPort.Value())
+	cfg.Server.TLSCertFile = f.EditTLSSvrCertFile.Text()
+	cfg.Server.TLSKeyFile = f.EditTLSSvrKeyFile.Text()
 
 	if !rtl.FileExists(f.rpConfigFileName) {
 		if f.DlgSaveCfg.Execute() {
@@ -252,7 +264,7 @@ func (f *TMainForm) OnChkAutoReconnectClick(sender vcl.IObject) {
 func (f *TMainForm) runSvr() {
 	str := ""
 	switch f.modeIndex {
-	case 0:
+	case CLIENT:
 		s := fmt.Sprintln("客户端启动，连接服务器：", f.EditSvrAddr.Text(), "， 端口：", f.SpinTCPPort.Value())
 		str += s
 		librp.Log.I(s)
@@ -265,7 +277,7 @@ func (f *TMainForm) runSvr() {
 		str += s
 		librp.Log.I(s)
 
-	case 1:
+	case SERVER:
 		s := fmt.Sprintln("TCP服务端已启动，端口：", f.SpinTCPPort.Value())
 		str += s
 		librp.Log.I(s)
@@ -306,9 +318,9 @@ func (f *TMainForm) runSvr() {
 func (f *TMainForm) OnActStartExecute(sender vcl.IObject) {
 
 	switch f.modeIndex {
-	case 0:
+	case CLIENT:
 		f.rpObj = librp.NewRPClient()
-	case 1:
+	case SERVER:
 		f.rpObj = librp.NewRPServer()
 	}
 	if f.rpObj == nil {
@@ -402,6 +414,34 @@ func (f *TMainForm) OnLstLogsDrawItem(control vcl.IWinControl, index int32, aRec
 	canvas.TextOut(aRect.Left, aRect.Top, s)
 }
 
-func (f *TMainForm) OnGBBaseClick(sender vcl.IObject) {
+func (f *TMainForm) OnBtnCliCertOpenClick(sender vcl.IObject) {
+	if f.DlgOpen.Execute() {
+		f.EditTLSCliCertFile.SetText(f.DlgOpen.FileName())
+	}
+}
+
+func (f *TMainForm) OnBtnCliKeyOpenClick(sender vcl.IObject) {
+	if f.DlgOpen.Execute() {
+		f.EditTLSCliKeyFile.SetText(f.DlgOpen.FileName())
+	}
+}
+
+func (f *TMainForm) OnBtnSvrCertOpenClick(sender vcl.IObject) {
+	if f.DlgOpen.Execute() {
+		f.EditTLSSvrCertFile.SetText(f.DlgOpen.FileName())
+	}
+}
+
+func (f *TMainForm) OnBtnSvrKeyOpenClick(sender vcl.IObject) {
+	if f.DlgOpen.Execute() {
+		f.EditTLSSvrKeyFile.SetText(f.DlgOpen.FileName())
+	}
+}
+
+func (f *TMainForm) OnSpinMaxLogLineChange(sender vcl.IObject) {
+	f.appCfg.WriteInteger("System", "MaxLogLine", f.SpinMaxLogLine.Value())
+}
+
+func (f *TMainForm) OnPageControl1Change(sender vcl.IObject) {
 
 }
