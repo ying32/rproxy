@@ -87,6 +87,7 @@ func (f *TMainForm) loadAppConfig() {
 		librp.SetConfig(cfg)
 		f.updateUIConfig(cfg)
 		f.rpConfigLoaded = true
+		librp.Log.I("已加载RP配置：" + f.rpConfigFileName)
 	}
 	f.autoReboot = f.appCfg.ReadBool("System", "AutoReboot", true)
 	f.ChkAutoReconnect.SetChecked(f.autoReboot)
@@ -242,18 +243,18 @@ func (f *TMainForm) saveUIConfig() {
 		if f.DlgSaveCfg.Execute() {
 			f.rpConfigFileName = f.DlgSaveCfg.FileName()
 		} else {
-			librp.Log.I("取消保存配置")
+			librp.Log.I("取消保存RP配置")
 			return
 		}
 	}
 	librp.SetConfig(cfg)
 	err := librp.SaveConfig(f.rpConfigFileName, cfg)
 	if err != nil {
-		librp.Log.I("配置保存失败")
+		librp.Log.I("P配置保存失败")
 		return
 	}
 	f.rpConfigLoaded = true
-	librp.Log.I("配置已保存")
+	librp.Log.I("RP配置已保存:" + f.rpConfigFileName)
 }
 
 func (f *TMainForm) OnBtnLoadCfgClick(sender vcl.IObject) {
@@ -261,7 +262,7 @@ func (f *TMainForm) OnBtnLoadCfgClick(sender vcl.IObject) {
 		cfg := new(librp.TRProxyConfig)
 		err := librp.LoadConfig(f.DlgOpen.FileName(), cfg)
 		if err != nil {
-			vcl.ShowMessage("载入配置失败：" + err.Error())
+			vcl.ShowMessage("载入RP配置失败：" + err.Error())
 		} else {
 			librp.SetConfig(cfg)
 			f.rpConfigFileName = f.DlgOpen.FileName()
@@ -269,6 +270,7 @@ func (f *TMainForm) OnBtnLoadCfgClick(sender vcl.IObject) {
 			// 载入即保存下当前的文件名
 			f.appCfg.WriteString("System", "RPConfigFileName", f.rpConfigFileName)
 			f.rpConfigLoaded = true
+			librp.Log.I("已加载RP配置：" + f.rpConfigFileName)
 		}
 	}
 }
@@ -279,35 +281,6 @@ func (f *TMainForm) OnChkAutoReconnectClick(sender vcl.IObject) {
 }
 
 func (f *TMainForm) runSvr() {
-	str := ""
-	switch f.modeIndex {
-	case CLIENT:
-		s := fmt.Sprintln("客户端启动，连接服务器：", f.EditSvrAddr.Text(), "， 端口：", f.SpinTCPPort.Value())
-		str += s
-		librp.Log.I(s)
-		if f.ChkIsHttps.Checked() {
-			s = "转发至HTTP服务为HTTPS"
-			str += s + "\r\n"
-			librp.Log.I(s)
-		}
-		s = fmt.Sprintln("转发至本地HTTP(S)端口：", f.SpinCliHTTPPort.Value())
-		str += s
-		librp.Log.I(s)
-
-	case SERVER:
-		s := fmt.Sprintln("TCP服务端已启动，端口：", f.SpinTCPPort.Value())
-		str += s
-		librp.Log.I(s)
-		if f.ChkIsHttps.Checked() {
-			s = "当前HTTP服务为HTTPS"
-			str += s + "\r\n"
-			librp.Log.I(s)
-		}
-		s = fmt.Sprintln("HTTP(S)服务端已开启，端口：", f.SpinSvrHTTPPort.Value())
-		str += s
-		librp.Log.I(s)
-	}
-	f.setTrayHint(str)
 
 	switch f.modeIndex {
 	case CLIENT:
@@ -344,10 +317,6 @@ func (f *TMainForm) runSvr() {
 
 func (f *TMainForm) OnActStartExecute(sender vcl.IObject) {
 
-	//if f.checkConfig() != nil {
-	//	return
-	//}
-
 	switch f.modeIndex {
 	case CLIENT:
 		f.rpObj = librp.NewRPClient()
@@ -362,6 +331,36 @@ func (f *TMainForm) OnActStartExecute(sender vcl.IObject) {
 	f.started = true
 
 	f.LstLogs.Clear()
+
+	str := f.Caption() + "\r\n"
+	switch f.modeIndex {
+	case CLIENT:
+		s := fmt.Sprintln("客户端启动，连接服务器：", f.EditSvrAddr.Text(), "， 端口：", f.SpinTCPPort.Value())
+		str += s
+		librp.Log.I(s)
+		if f.ChkIsHttps.Checked() {
+			s = "转发至HTTP服务为HTTPS"
+			str += s + "\r\n"
+			librp.Log.I(s)
+		}
+		s = fmt.Sprintln("转发至本地HTTP(S)端口：", f.SpinCliHTTPPort.Value())
+		str += s
+		librp.Log.I(s)
+
+	case SERVER:
+		s := fmt.Sprintln("TCP服务端已启动，端口：", f.SpinTCPPort.Value())
+		str += s
+		librp.Log.I(s)
+		if f.ChkIsHttps.Checked() {
+			s = "当前HTTP服务为HTTPS"
+			str += s + "\r\n"
+			librp.Log.I(s)
+		}
+		s = fmt.Sprintln("HTTP(S)服务端已开启，端口：", f.SpinSvrHTTPPort.Value())
+		str += s
+		librp.Log.I(s)
+	}
+	f.setTrayHint(str)
 
 	go f.runSvr()
 
