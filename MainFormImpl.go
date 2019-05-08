@@ -290,22 +290,32 @@ func (f *TMainForm) runSvr() {
 		str += s
 		librp.Log.I(s)
 	}
-
 	f.setTrayHint(str)
-	for f.started {
+
+	switch f.modeIndex {
+	case CLIENT:
 		librp.Log.I("连接服务端...")
-		err := f.rpObj.Start()
-		if err != nil {
-			librp.Log.E("连接服务器错误：", err)
-			librp.Log.I("5秒后重新连接...")
-			for i := 0; i < 5; i++ {
-				if !f.started {
+		for f.started {
+			err := f.rpObj.Start()
+			if err != nil {
+				librp.Log.E("连接服务器错误：", err)
+				librp.Log.I("5秒后重新连接...")
+				for i := 0; i < 5; i++ {
+					if !f.started {
+						break
+					}
+					time.Sleep(time.Second * 1)
+				}
+				if !f.autoReboot {
 					break
 				}
-				time.Sleep(time.Second * 1)
 			}
-			if !f.autoReboot {
-				break
+		}
+	case SERVER:
+		if f.started {
+			err := f.rpObj.Start()
+			if err != nil {
+				librp.Log.E("启动服务端错误：", err)
 			}
 		}
 	}
