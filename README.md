@@ -73,11 +73,11 @@ rproxy --cfgfile="./conf/confighttps.cfg"
 ```
 
 #### 带GUI的客户端
-![client_gui.jpg](imgs/client_gui.jpg)   
+[查看截图](imgs)  
 
 ### 操作系统支持  
 
-支持Windows、Linux、MacOSX等，无第三方依赖库。[查看截图](imgs)  
+支持Windows、Linux、MacOSX等，无第三方依赖库。  
 
 ### 二进制下载
 
