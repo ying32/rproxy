@@ -1,7 +1,7 @@
 echo 编译64位rproxy_GUI中...
 
 # 根据你的实际情况修改这里
-export GOROOT=$HOME/go
+export GOROOT=$HOME/godev/go
 export PATH=$GOROOT/bin:$PATH
 
 export GOARCH=amd64
