@@ -10,11 +10,14 @@ import (
 
 func main() {
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("服务端请求数据了！")
-		fmt.Println(r)
-		w.Write([]byte("请求成功！"))
-	})
+	//http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	//	fmt.Println("服务端请求数据了！")
+	//	fmt.Println(r)
+	//	w.Write([]byte("请求成功！"))
+	//})
+	fs := http.FileServer(http.Dir("C:\\"))
+	http.Handle("/", http.StripPrefix("/", fs))
+
 	go func() {
 		fmt.Println("监听HTTPS 8089端口中...")
 		certPool := x509.NewCertPool()
