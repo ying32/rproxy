@@ -26,7 +26,7 @@
   --mode         # 启动模式，可选为client、server，默认为client。  
   --svraddr      # 当mode为client时有效，为连接服务器的地址，不需要填写端口。    
   --vkey         # 客户端与服务端建立连接时校验的加密key，简单的。  
-  ### 以下三个参数为v0.6版本之后的，只应用于mode为server时 
+  ### 以下参数为v0.6版本及之后的
   --ishttps      # httpPort端口是否只用作HTTPS监听，默认为false。    
   --tlscafile    # 当ishttps为true时，所需的CA根证书文件。可为空，根据实际情况确定。  
   --tlscertfile  # 当ishttps为true时，所需求的TLS证书文件。  
