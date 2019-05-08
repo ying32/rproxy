@@ -58,6 +58,16 @@ object MainForm: TMainForm
         ParentFont = False
         TabOrder = 1
       end
+      object Label12: TLabel
+        Left = 40
+        Height = 20
+        Top = 11
+        Width = 345
+        Caption = '注：如有修改配置，需要【保存配置】后方能生效。'
+        Font.Color = clGreen
+        ParentColor = False
+        ParentFont = False
+      end
     end
     object PageControl1: TPageControl
       Left = 0
@@ -215,6 +225,7 @@ object MainForm: TMainForm
             Top = 78
             Width = 94
             Caption = '保存配置'
+            OnClick = BtnSaveCfgClick
             ParentFont = False
             TabOrder = 5
           end

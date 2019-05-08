@@ -45,6 +45,7 @@ type
     Label1: TLabel;
     Label10: TLabel;
     Label11: TLabel;
+    Label12: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
@@ -74,6 +75,7 @@ type
     TrayIcon1: TTrayIcon;
     procedure BtnCliCertOpenClick(Sender: TObject);
     procedure BtnCliKeyOpenClick(Sender: TObject);
+    procedure BtnSaveCfgClick(Sender: TObject);
     procedure BtnSvrCertOpenClick(Sender: TObject);
     procedure BtnSvrKeyOpenClick(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
@@ -109,6 +111,11 @@ begin
 end;
 
 procedure TMainForm.BtnCliKeyOpenClick(Sender: TObject);
+begin
+
+end;
+
+procedure TMainForm.BtnSaveCfgClick(Sender: TObject);
 begin
 
 end;

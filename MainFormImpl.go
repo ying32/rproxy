@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/ying32/govcl/vcl"
 	"github.com/ying32/govcl/vcl/rtl"
 	"github.com/ying32/govcl/vcl/types"
@@ -21,6 +23,8 @@ const (
 	SERVER  = 1
 	CLIENT  = 0
 )
+
+var CheckConfigError = errors.New("检查配置错误")
 
 //::private::
 type TMainFormFields struct {
@@ -183,31 +187,36 @@ func (f *TMainForm) updateUIConfig(cfg *librp.TRProxyConfig) {
 	f.EditTLSSvrKeyFile.SetText(cfg.Server.TLSKeyFile)
 }
 
-func (f *TMainForm) saveUIConfig() {
-
+func (f *TMainForm) checkConfig() error {
 	if f.EditVerifyKey.Text() == "" {
 		f.EditVerifyKey.SetFocus()
 		vcl.ShowMessage("必须输入一个验证的key")
-		return
+		return CheckConfigError
 	}
 	if f.EditSvrAddr.Text() == "" {
 		f.EditSvrAddr.SetFocus()
 		vcl.ShowMessage("要连接的服务器地址不能为空")
-		return
+		return CheckConfigError
 	}
 	if f.ChkIsHttps.Checked() {
 
 		if f.EditTLSCliCertFile.Text() == "" || f.EditTLSCliKeyFile.Text() == "" {
 			vcl.ShowMessage("当为HTTPS时，客户端TLS证书不能为空。")
-			return
+			return CheckConfigError
 		}
 
 		if f.EditTLSSvrCertFile.Text() == "" || f.EditTLSSvrKeyFile.Text() == "" {
 			vcl.ShowMessage("当为HTTPS时，服务端TLS证书不能为空。")
-			return
+			return CheckConfigError
 		}
 	}
+	return nil
+}
 
+func (f *TMainForm) saveUIConfig() {
+	if f.checkConfig() != nil {
+		return
+	}
 	cfg := new(librp.TRProxyConfig)
 
 	cfg.TCPPort = int(f.SpinTCPPort.Value())
@@ -236,7 +245,11 @@ func (f *TMainForm) saveUIConfig() {
 		}
 	}
 	librp.SetConfig(cfg)
-	librp.SaveConfig(f.rpConfigFileName, cfg)
+	err := librp.SaveConfig(f.rpConfigFileName, cfg)
+	if err != nil {
+		librp.Log.I("配置保存失败")
+		return
+	}
 	librp.Log.I("配置已保存")
 }
 
@@ -326,6 +339,10 @@ func (f *TMainForm) runSvr() {
 }
 
 func (f *TMainForm) OnActStartExecute(sender vcl.IObject) {
+
+	//if f.checkConfig() != nil {
+	//	return
+	//}
 
 	switch f.modeIndex {
 	case CLIENT:
