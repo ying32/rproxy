@@ -108,6 +108,7 @@ func main() {
 		rp.Log.I("转发至本地HTTP(S)端口：", rpConfig.Client.HTTPPort)
 		cli := rp.NewRPClient()
 		if err := cli.Start(); err != nil {
+			cli.Close()
 			rp.Log.E(err)
 			// 重连
 			rp.Log.I("5秒后重新连接...")

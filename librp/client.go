@@ -10,7 +10,8 @@ import (
 
 type TRPClient struct {
 	IRPObject
-	conn net.Conn
+	conn    net.Conn
+	running bool
 }
 
 func NewRPClient() *TRPClient {
@@ -23,6 +24,7 @@ func (c *TRPClient) Start() error {
 	if err != nil {
 		return err
 	}
+	c.running = true
 	c.conn = conn
 	return c.process()
 }
@@ -55,9 +57,7 @@ func (c *TRPClient) process() error {
 		Log.I(req.Method + "  " + req.URL.Path + rawQuery)
 		// 请求本地指定的HTTP服务器
 		client := new(http.Client)
-		//client.Transport = &http.Transport{
-		//	TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		//}
+
 		if conf.IsHTTPS {
 			client.Transport = &http.Transport{
 				TLSClientConfig: &tls.Config{
@@ -85,7 +85,7 @@ func (c *TRPClient) process() error {
 	}
 
 	// read循环
-	for {
+	for c.running {
 		err := readPacket(c.conn, func(cmd uint16, data []byte) error {
 			switch cmd {
 			case PacketCmd1:
@@ -112,13 +112,14 @@ func (c *TRPClient) process() error {
 		})
 		// read出错，退出
 		if err != nil {
-			c.Close()
 			return err
 		}
 	}
+	return nil
 }
 
 func (c *TRPClient) Close() error {
+	c.running = false
 	if c.conn != nil {
 		err := c.conn.Close()
 		c.conn = nil

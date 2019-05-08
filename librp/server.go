@@ -2,12 +2,14 @@ package librp
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -18,6 +20,7 @@ type TRPServer struct {
 	httpSvr  *http.Server
 	conn     net.Conn
 	sync.RWMutex
+	running bool
 }
 
 func NewRPServer() *TRPServer {
@@ -28,6 +31,7 @@ func NewRPServer() *TRPServer {
 func (s *TRPServer) Start() error {
 	var err error
 	s.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", conf.TCPPort))
+	s.running = true
 	if err != nil {
 		return err
 	}
@@ -36,11 +40,14 @@ func (s *TRPServer) Start() error {
 }
 
 func (s *TRPServer) Close() error {
+	s.running = false
 	if s.conn != nil {
 		s.conn.Close()
 		s.conn = nil
 	}
 	if s.httpSvr != nil {
+		ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
+		s.httpSvr.Shutdown(ctx)
 		s.httpSvr.Close()
 		s.httpSvr = nil
 	}
@@ -54,12 +61,13 @@ func (s *TRPServer) Close() error {
 
 func (s *TRPServer) tcpServer() error {
 	var err error
-	for {
-		if s.listener == nil {
-			return errors.New("监听已关闭。")
-		}
-		conn, err := s.listener.Accept()
+	for s.running {
+		var conn net.Conn
+		conn, err = s.listener.Accept()
 		if err != nil {
+			if strings.Contains(err.Error(), "use of closed network connection") {
+				return nil
+			}
 			Log.E(err)
 			continue
 		}
@@ -112,15 +120,20 @@ func (s *TRPServer) httpServer() {
 		Handler: newHTTPHandler(s.RWMutex, s.read, s.write),
 		TLSConfig: &tls.Config{
 			ClientCAs: conf.certPool,
-			// 这个不开启。。。
 			//ClientAuth: tls.RequireAndVerifyClientCert,
 		},
 	}
+	var err error
 	if !conf.IsHTTPS {
-		Log.EF(s.httpSvr.ListenAndServe())
+		err = s.httpSvr.ListenAndServe()
 	} else {
 
-		Log.EF(s.httpSvr.ListenAndServeTLS(conf.Server.TLSCertFile, conf.Server.TLSKeyFile))
+		err = s.httpSvr.ListenAndServeTLS(conf.Server.TLSCertFile, conf.Server.TLSKeyFile)
+	}
+	if err != nil && err != http.ErrServerClosed {
+		Log.EF(err)
+	} else {
+		Log.I("HTTP服务已关闭。")
 	}
 }
 

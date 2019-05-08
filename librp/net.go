@@ -243,10 +243,10 @@ func readPacket(conn net.Conn, fn func(cmd uint16, data []byte) error) error {
 					Log.E("包尾不正确")
 				}
 			} else {
-				Log.E("数据太长")
+				Log.E("数据太长，不给处理。")
 			}
 		} else {
-			Log.E("版本不一致")
+			return errors.New("版本不一致")
 		}
 	}
 	return nil

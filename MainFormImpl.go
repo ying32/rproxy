@@ -35,6 +35,7 @@ type TMainFormFields struct {
 	appCfg           *vcl.TIniFile
 	modeIndex        int32
 	isDarwin         bool
+	rpConfigLoaded   bool
 }
 
 func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
@@ -85,6 +86,7 @@ func (f *TMainForm) loadAppConfig() {
 	if err == nil {
 		librp.SetConfig(cfg)
 		f.updateUIConfig(cfg)
+		f.rpConfigLoaded = true
 	}
 	f.autoReboot = f.appCfg.ReadBool("System", "AutoReboot", true)
 	f.ChkAutoReconnect.SetChecked(f.autoReboot)
@@ -250,6 +252,7 @@ func (f *TMainForm) saveUIConfig() {
 		librp.Log.I("配置保存失败")
 		return
 	}
+	f.rpConfigLoaded = true
 	librp.Log.I("配置已保存")
 }
 
@@ -265,6 +268,7 @@ func (f *TMainForm) OnBtnLoadCfgClick(sender vcl.IObject) {
 			f.updateUIConfig(cfg)
 			// 载入即保存下当前的文件名
 			f.appCfg.WriteString("System", "RPConfigFileName", f.rpConfigFileName)
+			f.rpConfigLoaded = true
 		}
 	}
 }
@@ -381,7 +385,7 @@ func (f *TMainForm) setControlState(state bool) {
 }
 
 func (f *TMainForm) OnActStartUpdate(sender vcl.IObject) {
-	vcl.ActionFromObj(sender).SetEnabled(!f.started)
+	vcl.ActionFromObj(sender).SetEnabled(!f.started && f.rpConfigLoaded)
 }
 
 func (f *TMainForm) OnActStopExecute(sender vcl.IObject) {
@@ -396,12 +400,13 @@ func (f *TMainForm) OnActStopExecute(sender vcl.IObject) {
 }
 
 func (f *TMainForm) OnActStopUpdate(sender vcl.IObject) {
-	vcl.ActionFromObj(sender).SetEnabled(f.started)
+	vcl.ActionFromObj(sender).SetEnabled(f.started && f.rpConfigLoaded)
 }
 
 func (f *TMainForm) OnBtnNewCfgClick(sender vcl.IObject) {
 	librp.Log.I("新建配置")
 	f.rpConfigFileName = ""
+	f.rpConfigLoaded = false
 }
 
 func (f *TMainForm) updateCaption() {
