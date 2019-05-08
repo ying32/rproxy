@@ -9,19 +9,12 @@ import (
 )
 
 type TRPClient struct {
-	conn    net.Conn
-	cliCert tls.Certificate
+	IRPObject
+	conn net.Conn
 }
 
 func NewRPClient() *TRPClient {
 	c := new(TRPClient)
-	if conf.TLSCertFile != "" && conf.TLSKeyFile != "" {
-		var err error
-		c.cliCert, err = tls.LoadX509KeyPair(conf.TLSCertFile, conf.TLSKeyFile)
-		if err != nil {
-			Log.E(err)
-		}
-	}
 	return c
 }
 
@@ -69,7 +62,7 @@ func (c *TRPClient) process() error {
 			client.Transport = &http.Transport{
 				TLSClientConfig: &tls.Config{
 					RootCAs:      conf.certPool,
-					Certificates: []tls.Certificate{c.cliCert},
+					Certificates: []tls.Certificate{conf.cliCert},
 				},
 			}
 		}

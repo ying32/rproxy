@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/zlib"
 	"crypto/sha1"
+	"crypto/tls"
 	"crypto/x509"
 	"io"
 	"io/ioutil"
@@ -45,6 +46,15 @@ func SetConfig(cfg *TRProxyConfig) {
 	conf.Client.SvrAddr = cfg.Client.SvrAddr
 	conf.Client.HTTPPort = cfg.Client.HTTPPort
 
+	if conf.TLSCertFile != "" && conf.TLSKeyFile != "" {
+		var err error
+		conf.cliCert, err = tls.LoadX509KeyPair(conf.TLSCertFile, conf.TLSKeyFile)
+		if err != nil {
+			Log.E(err)
+		}
+	} else {
+		conf.cliCert = tls.Certificate{}
+	}
 	// 初始KEY
 	conf.verifyVal = sha1.Sum([]byte("I AM A KEY:" + conf.VerifyKey))
 

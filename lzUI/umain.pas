@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ActnList, ComCtrls,
-  ExtCtrls, StdCtrls, Spin, Buttons;
+  ExtCtrls, StdCtrls, Spin, Buttons, Types;
 
 type
 
@@ -16,9 +16,9 @@ type
     ActionList1: TActionList;
     ActStart: TAction;
     ActStop: TAction;
-    BtnCAOpen: TSpeedButton;
-    BtnCertOpen: TSpeedButton;
-    BtnKeyOpen: TSpeedButton;
+    BtnCAOpen: TButton;
+    BtnCertOpen: TButton;
+    BtnKeyOpen: TButton;
     BtnLoadCfg: TButton;
     BtnNewCfg: TButton;
     BtnRandKey: TButton;
@@ -35,8 +35,9 @@ type
     EditTLSCertFile: TEdit;
     EditTLSKeyFile: TEdit;
     EditVerifyKey: TEdit;
-    GPBase: TGroupBox;
-    GPTLS: TGroupBox;
+    GBBase: TGroupBox;
+    GBTLS: TGroupBox;
+    GBAppSettings: TGroupBox;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -44,11 +45,21 @@ type
     Label5: TLabel;
     Label6: TLabel;
     Label7: TLabel;
+    Label8: TLabel;
+    Label9: TLabel;
+    LstLogs: TListBox;
+    PageControl1: TPageControl;
     Panel1: TPanel;
     Panel2: TPanel;
-    SpinHTTPPort: TSpinEdit;
+    RGMode: TRadioGroup;
+    SpinCliHTTPPort: TSpinEdit;
+    SpinMaxLogLine: TSpinEdit;
+    SpinSvrHTTPPort: TSpinEdit;
     SpinTCPPort: TSpinEdit;
     StatusBar1: TStatusBar;
+    TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
+    TrayIcon1: TTrayIcon;
     procedure ActStartExecute(Sender: TObject);
     procedure ActStartUpdate(Sender: TObject);
     procedure ActStopExecute(Sender: TObject);
@@ -60,9 +71,13 @@ type
     procedure BtnNewCfgClick(Sender: TObject);
     procedure BtnRandKeyClick(Sender: TObject);
     procedure BtnSaveCfgClick(Sender: TObject);
-    procedure ChkAutoReconnectChange(Sender: TObject);
     procedure ChkAutoReconnectClick(Sender: TObject);
-    procedure GPTLSClick(Sender: TObject);
+
+    procedure GBBaseClick(Sender: TObject);
+
+    procedure LstLogsDrawItem(Control: TWinControl; Index: Integer;
+      ARect: TRect; State: TOwnerDrawState);
+    procedure RGModeClick(Sender: TObject);
   private
 
   public
@@ -78,14 +93,13 @@ implementation
 
 { TMainForm }
 
-procedure TMainForm.BtnLoadCfgClick(Sender: TObject);
+
+
+
+
+procedure TMainForm.RGModeClick(Sender: TObject);
 begin
   //
-end;
-
-procedure TMainForm.BtnNewCfgClick(Sender: TObject);
-begin
- //
 end;
 
 procedure TMainForm.BtnRandKeyClick(Sender: TObject);
@@ -103,6 +117,19 @@ begin
   //
 end;
 
+
+
+procedure TMainForm.GBBaseClick(Sender: TObject);
+begin
+
+end;
+
+
+procedure TMainForm.LstLogsDrawItem(Control: TWinControl; Index: Integer;
+  ARect: TRect; State: TOwnerDrawState);
+begin
+  //
+end;
 
 procedure TMainForm.BtnCAOpenClick(Sender: TObject);
 begin
@@ -136,10 +163,10 @@ end;
 
 procedure TMainForm.BtnKeyOpenClick(Sender: TObject);
 begin
-
+  //
 end;
 
-procedure TMainForm.BtnKeyOpenClick(Sender: TObject);
+procedure TMainForm.BtnLoadCfgClick(Sender: TObject);
 begin
   //
 end;
@@ -149,17 +176,15 @@ begin
   //
 end;
 
-procedure TMainForm.BtnRandKeyClick(Sender: TObject);
+procedure TMainForm.BtnCAOpenClick(Sender: TObject);
 begin
   //
 end;
 
-procedure TMainForm.BtnSaveCfgClick(Sender: TObject);
+procedure TMainForm.BtnNewCfgClick(Sender: TObject);
 begin
   //
 end;
-
-
 
 end.
 

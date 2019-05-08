@@ -36,6 +36,11 @@ type TPacketHead struct {
 	//Tail uint8
 }
 
+type IRPObject interface {
+	Start() error
+	Close() error
+}
+
 var (
 	// 封包头的结构长度
 	PacketHeadLen = getPacketHeadSize() //8

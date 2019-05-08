@@ -1,6 +1,7 @@
 package librp
 
 import (
+	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
 	"io/ioutil"
@@ -9,8 +10,9 @@ import (
 // 配置文件，一个json文件，可包含客户端和服务端配置
 type TRProxyConfig struct {
 	// 不导出字段
-	certPool  *x509.CertPool // 这个字段不导出的，只内部使用
-	verifyVal [20]byte       // 验证的值
+	certPool  *x509.CertPool  // 这个字段不导出的，只内部使用
+	cliCert   tls.Certificate // 这个字段不导出的，只内部使用
+	verifyVal [20]byte        // 验证的值
 
 	// 导出的字段
 	TCPPort     int    `json:"tcpport"`     // Socket连接或者监听的端口

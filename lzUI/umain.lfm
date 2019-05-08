@@ -1,304 +1,438 @@
 object MainForm: TMainForm
-  Left = 887
-  Height = 503
-  Top = 547
-  Width = 631
+  Left = 840
+  Height = 684
+  Top = 259
+  Width = 624
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'rproxy客户端'
-  ClientHeight = 503
-  ClientWidth = 631
+  Caption = 'rproxy'
+  ClientHeight = 684
+  ClientWidth = 624
   DesignTimePPI = 120
+  DoubleBuffered = True
+  ParentDoubleBuffered = False
   Position = poScreenCenter
   LCLVersion = '2.0.0.4'
   object StatusBar1: TStatusBar
     Left = 0
     Height = 29
-    Top = 474
-    Width = 631
+    Top = 655
+    Width = 624
     Panels = <>
   end
   object Panel1: TPanel
     Left = 0
-    Height = 474
+    Height = 655
     Top = 0
-    Width = 631
+    Width = 624
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 474
-    ClientWidth = 631
+    ClientHeight = 655
+    ClientWidth = 624
     TabOrder = 1
-    object GPBase: TGroupBox
-      Left = 16
-      Height = 224
-      Top = 8
-      Width = 599
-      ClientHeight = 199
-      ClientWidth = 595
-      TabOrder = 0
-      object Label1: TLabel
-        Left = 21
-        Height = 23
-        Top = 10
-        Width = 176
-        AutoSize = False
-        Caption = 'TCP端口：'
-        ParentColor = False
-      end
-      object Label2: TLabel
-        Left = 21
-        Height = 25
-        Top = 51
-        Width = 176
-        AutoSize = False
-        Caption = '转发至本地的HTTP(S)端口：'
-        ParentColor = False
-      end
-      object Label3: TLabel
-        Left = 21
-        Height = 23
-        Top = 131
-        Width = 87
-        AutoSize = False
-        Caption = '验证KEY：'
-        ParentColor = False
-      end
-      object Label7: TLabel
-        Left = 21
-        Height = 22
-        Top = 90
-        Width = 89
-        AutoSize = False
-        Caption = '服务器地址：'
-        ParentColor = False
-      end
-      object SpinTCPPort: TSpinEdit
-        Left = 206
-        Height = 28
-        Hint = '可输入1-65535'
-        Top = 7
-        Width = 82
-        MaxValue = 65535
-        MinValue = 1
-        TabOrder = 0
-        Value = 8285
-      end
-      object SpinHTTPPort: TSpinEdit
-        Left = 206
-        Height = 28
-        Hint = '可输入1-65535'
-        Top = 48
-        Width = 82
-        MaxValue = 65535
-        MinValue = 1
-        TabOrder = 1
-        Value = 8286
-      end
-      object ChkIsZip: TCheckBox
-        Left = 21
-        Height = 24
-        Top = 167
-        Width = 106
-        Caption = '开启ZIP压缩'
-        TabOrder = 2
-      end
-      object EditVerifyKey: TEdit
-        Left = 112
-        Height = 28
-        Top = 128
-        Width = 186
-        ReadOnly = True
-        TabOrder = 3
-      end
-      object BtnRandKey: TButton
-        Left = 299
-        Height = 27
-        Top = 127
-        Width = 46
-        Caption = '随机'
-        OnClick = BtnRandKeyClick
-        TabOrder = 4
-      end
-      object BtnSaveCfg: TButton
-        Left = 492
-        Height = 31
-        Top = 79
-        Width = 83
-        Caption = '保存配置'
-        OnClick = BtnSaveCfgClick
-        TabOrder = 5
-      end
-      object BtnLoadCfg: TButton
-        Left = 492
-        Height = 31
-        Top = 7
-        Width = 83
-        Caption = '载入配置'
-        OnClick = BtnLoadCfgClick
-        TabOrder = 6
-      end
-      object ChkAutoReconnect: TCheckBox
-        Left = 201
-        Height = 24
-        Top = 167
-        Width = 219
-        Caption = '与服务器连接断开后自动重连'
-        OnClick = ChkAutoReconnectClick
-        TabOrder = 7
-      end
-      object BtnNewCfg: TButton
-        Left = 492
-        Height = 31
-        Top = 43
-        Width = 83
-        Caption = '新建配置'
-        OnClick = BtnNewCfgClick
-        TabOrder = 8
-      end
-      object EditSvrAddr: TEdit
-        Left = 112
-        Height = 28
-        Top = 87
-        Width = 234
-        TabOrder = 9
-      end
-    end
-    object GPTLS: TGroupBox
-      Left = 16
-      Height = 201
-      Top = 239
-      Width = 599
-      ClientHeight = 176
-      ClientWidth = 595
-      TabOrder = 1
-      OnClick = GPTLSClick
-      object Label4: TLabel
-        Left = 21
-        Height = 22
-        Top = 52
-        Width = 107
-        AutoSize = False
-        Caption = 'TLS CA根证书：'
-        ParentColor = False
-      end
-      object Label5: TLabel
-        Left = 21
-        Height = 23
-        Top = 96
-        Width = 101
-        AutoSize = False
-        Caption = 'TLS Cert文件：'
-        ParentColor = False
-      end
-      object Label6: TLabel
-        Left = 21
-        Height = 23
-        Top = 136
-        Width = 107
-        AutoSize = False
-        Caption = 'TLS Key文件：'
-        ParentColor = False
-      end
-      object BtnCAOpen: TButton
-        Left = 541
-        Height = 28
-        Top = 48
-        Width = 30
-        Caption = '...'
-        OnClick = BtnCAOpenClick
-        TabOrder = 3
-      end
-      object BtnCertOpen: TButton
-        Left = 541
-        Height = 28
-        Top = 92
-        Width = 30
-        Caption = '...'
-        OnClick = BtnCertOpenClick
-        TabOrder = 4
-      end
-      object BtnKeyOpen: TButton
-        Left = 541
-        Height = 28
-        Top = 133
-        Width = 30
-        Caption = '...'
-        OnClick = BtnKeyOpenClick
-        TabOrder = 5
-      end
-      object EditTLSCAFile: TEdit
-        Left = 126
-        Height = 28
-        Top = 49
-        Width = 412
-        ReadOnly = True
-        TabOrder = 0
-      end
-      object EditTLSCertFile: TEdit
-        Left = 126
-        Height = 28
-        Top = 93
-        Width = 412
-        ReadOnly = True
-        TabOrder = 1
-      end
-      object EditTLSKeyFile: TEdit
-        Left = 126
-        Height = 28
-        Top = 134
-        Width = 412
-        ReadOnly = True
-        TabOrder = 2
-      end
-      object ChkIsHttps: TCheckBox
-        Left = 21
-        Height = 24
-        Top = 8
-        Width = 162
-        Caption = '转发客户端为HTTPS'
-        TabOrder = 6
-      end
-    end
     object Panel2: TPanel
       Left = 0
-      Height = 39
-      Top = 435
-      Width = 631
+      Height = 42
+      Top = 613
+      Width = 624
       Align = alBottom
-      ClientHeight = 39
-      ClientWidth = 631
-      TabOrder = 2
+      ClientHeight = 42
+      ClientWidth = 624
+      TabOrder = 0
       object BtnStart: TButton
-        Left = 456
-        Height = 29
-        Top = 3
-        Width = 76
+        Left = 408
+        Height = 31
+        Top = 5
+        Width = 94
         Action = ActStart
         TabOrder = 0
       end
       object BtnStop: TButton
-        Left = 534
-        Height = 29
-        Top = 3
-        Width = 76
+        Left = 512
+        Height = 31
+        Top = 5
+        Width = 94
         Action = ActStop
         TabOrder = 1
+      end
+    end
+    object PageControl1: TPageControl
+      Left = 0
+      Height = 613
+      Top = 0
+      Width = 624
+      ActivePage = TabSheet1
+      Align = alClient
+      TabIndex = 0
+      TabOrder = 1
+      object TabSheet1: TTabSheet
+        Caption = '服务端/客户端设置'
+        ClientHeight = 580
+        ClientWidth = 616
+        object RGMode: TRadioGroup
+          Left = 0
+          Height = 72
+          Top = 0
+          Width = 616
+          Align = alTop
+          AutoFill = True
+          Caption = '模式选择'
+          ChildSizing.LeftRightSpacing = 6
+          ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+          ChildSizing.EnlargeVertical = crsHomogenousChildResize
+          ChildSizing.ShrinkHorizontal = crsScaleChilds
+          ChildSizing.ShrinkVertical = crsScaleChilds
+          ChildSizing.Layout = cclLeftToRightThenTopToBottom
+          ChildSizing.ControlsPerLine = 2
+          ClientHeight = 47
+          ClientWidth = 612
+          Columns = 2
+          ItemIndex = 0
+          Items.Strings = (
+            '客户端'
+            '服务端'
+          )
+          OnClick = RGModeClick
+          TabOrder = 0
+        end
+        object GBBase: TGroupBox
+          Left = 0
+          Height = 276
+          Top = 136
+          Width = 616
+          Align = alClient
+          Caption = '服务端/客户端设置'
+          ClientHeight = 251
+          ClientWidth = 612
+          TabOrder = 1
+          OnClick = GBBaseClick
+          object Label1: TLabel
+            Left = 21
+            Height = 28
+            Top = 7
+            Width = 203
+            AutoSize = False
+            Caption = '连接或监听的TCP端口：'
+            Layout = tlCenter
+            ParentColor = False
+          end
+          object Label2: TLabel
+            Left = 21
+            Height = 28
+            Top = 88
+            Width = 203
+            AutoSize = False
+            Caption = '客户端转发的HTTP(S)端口：'
+            Layout = tlCenter
+            ParentColor = False
+          end
+          object Label3: TLabel
+            Left = 24
+            Height = 28
+            Top = 169
+            Width = 87
+            AutoSize = False
+            Caption = '验证KEY：'
+            Layout = tlCenter
+            ParentColor = False
+          end
+          object Label7: TLabel
+            Left = 24
+            Height = 28
+            Top = 128
+            Width = 89
+            AutoSize = False
+            Caption = '服务器地址：'
+            Layout = tlCenter
+            ParentColor = False
+          end
+          object SpinTCPPort: TSpinEdit
+            Left = 258
+            Height = 28
+            Hint = '可输入1-65535'
+            Top = 7
+            Width = 98
+            AutoSize = False
+            MaxValue = 65535
+            MinValue = 1
+            TabOrder = 0
+            Value = 8285
+          end
+          object SpinCliHTTPPort: TSpinEdit
+            Left = 258
+            Height = 28
+            Hint = '可输入1-65535'
+            Top = 88
+            Width = 98
+            AutoSize = False
+            MaxValue = 65535
+            MinValue = 1
+            TabOrder = 1
+            Value = 8286
+          end
+          object ChkIsZip: TCheckBox
+            Left = 24
+            Height = 24
+            Top = 213
+            Width = 106
+            Caption = '开启ZIP压缩'
+            TabOrder = 2
+          end
+          object EditVerifyKey: TEdit
+            Left = 115
+            Height = 28
+            Top = 169
+            Width = 186
+            AutoSize = False
+            ReadOnly = True
+            TabOrder = 3
+          end
+          object BtnRandKey: TButton
+            Left = 302
+            Height = 31
+            Top = 168
+            Width = 54
+            Caption = '随机'
+            OnClick = BtnRandKeyClick
+            TabOrder = 4
+          end
+          object BtnSaveCfg: TButton
+            Left = 504
+            Height = 31
+            Top = 79
+            Width = 94
+            Caption = '保存配置'
+            OnClick = BtnSaveCfgClick
+            TabOrder = 5
+          end
+          object BtnLoadCfg: TButton
+            Left = 504
+            Height = 31
+            Top = 7
+            Width = 94
+            Caption = '载入配置'
+            OnClick = BtnLoadCfgClick
+            TabOrder = 6
+          end
+          object BtnNewCfg: TButton
+            Left = 504
+            Height = 31
+            Top = 43
+            Width = 94
+            Caption = '新建配置'
+            OnClick = BtnNewCfgClick
+            TabOrder = 7
+          end
+          object EditSvrAddr: TEdit
+            Left = 115
+            Height = 28
+            Top = 128
+            Width = 241
+            AutoSize = False
+            TabOrder = 8
+          end
+          object ChkIsHttps: TCheckBox
+            Left = 155
+            Height = 24
+            Top = 213
+            Width = 138
+            Caption = '监听/转发HTTPS'
+            TabOrder = 9
+          end
+          object Label8: TLabel
+            Left = 21
+            Height = 28
+            Top = 48
+            Width = 203
+            AutoSize = False
+            Caption = '服务端监听的HTTP(S)端口：'
+            Layout = tlCenter
+            ParentColor = False
+          end
+          object SpinSvrHTTPPort: TSpinEdit
+            Left = 258
+            Height = 28
+            Hint = '可输入1-65535'
+            Top = 48
+            Width = 98
+            AutoSize = False
+            MaxValue = 65535
+            MinValue = 1
+            TabOrder = 10
+            Value = 8286
+          end
+        end
+        object GBTLS: TGroupBox
+          Left = 0
+          Height = 168
+          Top = 412
+          Width = 616
+          Align = alBottom
+          Caption = 'TLS证书设置'
+          ClientHeight = 143
+          ClientWidth = 612
+          TabOrder = 2
+          object Label4: TLabel
+            Left = 21
+            Height = 28
+            Top = 9
+            Width = 107
+            AutoSize = False
+            Caption = 'TLS CA根证书：'
+            Layout = tlCenter
+            ParentColor = False
+          end
+          object Label5: TLabel
+            Left = 21
+            Height = 28
+            Top = 53
+            Width = 101
+            AutoSize = False
+            Caption = 'TLS Cert文件：'
+            Layout = tlCenter
+            ParentColor = False
+          end
+          object Label6: TLabel
+            Left = 21
+            Height = 28
+            Top = 94
+            Width = 107
+            AutoSize = False
+            Caption = 'TLS Key文件：'
+            Layout = tlCenter
+            ParentColor = False
+          end
+          object BtnCAOpen: TButton
+            Left = 541
+            Height = 28
+            Top = 8
+            Width = 30
+            Caption = '...'
+            OnClick = BtnCAOpenClick
+            TabOrder = 0
+          end
+          object BtnCertOpen: TButton
+            Left = 541
+            Height = 28
+            Top = 52
+            Width = 30
+            Caption = '...'
+            OnClick = BtnCertOpenClick
+            TabOrder = 1
+          end
+          object BtnKeyOpen: TButton
+            Left = 541
+            Height = 28
+            Top = 93
+            Width = 30
+            Caption = '...'
+            OnClick = BtnKeyOpenClick
+            TabOrder = 2
+          end
+          object EditTLSCAFile: TEdit
+            Left = 126
+            Height = 28
+            Top = 8
+            Width = 412
+            AutoSize = False
+            ReadOnly = True
+            TabOrder = 3
+          end
+          object EditTLSCertFile: TEdit
+            Left = 126
+            Height = 28
+            Top = 53
+            Width = 412
+            AutoSize = False
+            ReadOnly = True
+            TabOrder = 4
+          end
+          object EditTLSKeyFile: TEdit
+            Left = 126
+            Height = 28
+            Top = 94
+            Width = 412
+            AutoSize = False
+            ReadOnly = True
+            TabOrder = 5
+          end
+        end
+        object GBAppSettings: TGroupBox
+          Left = 0
+          Height = 64
+          Top = 72
+          Width = 616
+          Align = alTop
+          Caption = 'APP设置'
+          ClientHeight = 39
+          ClientWidth = 612
+          TabOrder = 3
+          object ChkAutoReconnect: TCheckBox
+            Left = 24
+            Height = 24
+            Top = 4
+            Width = 219
+            Caption = '与服务器连接断开后自动重连'
+            OnClick = ChkAutoReconnectClick
+            TabOrder = 0
+          end
+          object Label9: TLabel
+            Left = 304
+            Height = 28
+            Top = 0
+            Width = 112
+            AutoSize = False
+            Caption = '最大日志行数：'
+            Layout = tlCenter
+            ParentColor = False
+          end
+          object SpinMaxLogLine: TSpinEdit
+            Left = 408
+            Height = 28
+            Top = 0
+            Width = 167
+            AutoSize = False
+            MaxValue = 200000
+            MinValue = 1
+            TabOrder = 1
+            Value = 5000
+          end
+        end
+      end
+      object TabSheet2: TTabSheet
+        Caption = '日志'
+        ClientHeight = 544
+        ClientWidth = 616
+        object LstLogs: TListBox
+          Left = 0
+          Height = 539
+          Top = 0
+          Width = 616
+          Align = alClient
+          BorderSpacing.Bottom = 5
+          Font.Height = -15
+          ItemHeight = 0
+          OnDrawItem = LstLogsDrawItem
+          ParentFont = False
+          Style = lbOwnerDrawFixed
+          TabOrder = 0
+        end
       end
     end
   end
   object DlgSaveCfg: TSaveDialog
     DefaultExt = '.cfg'
     Filter = '配置文件|*.cfg'
-    left = 272
-    top = 352
+    left = 496
+    top = 344
   end
   object DlgOpen: TOpenDialog
-    left = 480
-    top = 224
+    left = 544
+    top = 344
   end
   object ActionList1: TActionList
-    left = 424
-    top = 216
+    left = 448
+    top = 344
     object ActStart: TAction
       Caption = '启动'
       OnExecute = ActStartExecute
@@ -309,5 +443,10 @@ object MainForm: TMainForm
       OnExecute = ActStopExecute
       OnUpdate = ActStopUpdate
     end
+  end
+  object TrayIcon1: TTrayIcon
+    Visible = True
+    left = 448
+    top = 288
   end
 end

@@ -13,7 +13,9 @@ import (
 )
 
 type TRPServer struct {
+	IRPObject
 	listener net.Listener
+	httpSvr  *http.Server
 	conn     net.Conn
 	sync.RWMutex
 }
@@ -38,6 +40,10 @@ func (s *TRPServer) Close() error {
 		s.conn.Close()
 		s.conn = nil
 	}
+	if s.httpSvr != nil {
+		s.httpSvr.Close()
+		s.httpSvr = nil
+	}
 	if s.listener != nil {
 		err := s.listener.Close()
 		s.listener = nil
@@ -49,6 +55,9 @@ func (s *TRPServer) Close() error {
 func (s *TRPServer) tcpServer() error {
 	var err error
 	for {
+		if s.listener == nil {
+			return errors.New("监听已关闭。")
+		}
 		conn, err := s.listener.Accept()
 		if err != nil {
 			Log.E(err)
@@ -63,38 +72,55 @@ func badRequest(w http.ResponseWriter) {
 	http.Error(w, "请求错误，错误消息请看控制台信息。", http.StatusBadRequest)
 }
 
-func (s *TRPServer) httpServer() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		s.Lock()
-		defer s.Unlock()
-		Log.I(r.Method + " " + r.RequestURI)
-		err := s.write(r)
-		if err != nil {
-			badRequest(w)
-			Log.E(err)
-			return
-		}
-		err = s.read(w)
-		if err != nil {
-			badRequest(w)
-			Log.E(err)
-			return
-		}
-	})
+type THTTPHandler struct {
+	http.Handler
+	l     sync.RWMutex
+	read  func(w http.ResponseWriter) error
+	write func(r *http.Request) error
+}
 
+func newHTTPHandler(l sync.RWMutex, read func(w http.ResponseWriter) error, write func(r *http.Request) error) *THTTPHandler {
+	h := new(THTTPHandler)
+	h.l = l
+	h.read = read
+	h.write = write
+	return h
+}
+
+func (h *THTTPHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.l.Lock()
+	defer h.l.Unlock()
+	Log.I(r.Method + " " + r.RequestURI)
+	err := h.write(r)
+	if err != nil {
+		badRequest(w)
+		Log.E(err)
+		return
+	}
+	err = h.read(w)
+	if err != nil {
+		badRequest(w)
+		Log.E(err)
+		return
+	}
+}
+
+func (s *TRPServer) httpServer() {
+
+	s.httpSvr = &http.Server{
+		Addr:    fmt.Sprintf(":%d", conf.Server.HTTPPort),
+		Handler: newHTTPHandler(s.RWMutex, s.read, s.write),
+		TLSConfig: &tls.Config{
+			ClientCAs: conf.certPool,
+			// 这个不开启。。。
+			//ClientAuth: tls.RequireAndVerifyClientCert,
+		},
+	}
 	if !conf.IsHTTPS {
-		Log.EF(http.ListenAndServe(fmt.Sprintf(":%d", conf.Server.HTTPPort), nil))
+		Log.EF(s.httpSvr.ListenAndServe())
 	} else {
-		svr := &http.Server{
-			Addr:    fmt.Sprintf(":%d", conf.Server.HTTPPort),
-			Handler: nil,
-			TLSConfig: &tls.Config{
-				ClientCAs: conf.certPool,
-				// 这个不开启。。。
-				//ClientAuth: tls.RequireAndVerifyClientCert,
-			},
-		}
-		Log.EF(svr.ListenAndServeTLS(conf.TLSCertFile, conf.TLSKeyFile))
+
+		Log.EF(s.httpSvr.ListenAndServeTLS(conf.TLSCertFile, conf.TLSKeyFile))
 	}
 }
 

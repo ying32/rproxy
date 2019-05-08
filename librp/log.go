@@ -8,7 +8,7 @@ import (
 
 var (
 	DEBUG          = true           // 调试模式 输出 Log.D 字符
-	IsGUI          bool             // 是否为GUI
+	IsGUI          = false          // 是否为GUI
 	LogGUICallback func(msg string) // 当IsGUI=true时，不再输出到日志，使用当前回调函数
 )
 
@@ -45,7 +45,10 @@ func (l Logger) E(v ...interface{}) {
 func (l Logger) EF(v ...interface{}) {
 	textRed()
 	l.println(3, "ERROR", v...)
-	os.Exit(1)
+	// 非GUI模式下才退出，APP就挂了
+	if !IsGUI {
+		os.Exit(1)
+	}
 }
 
 // 信息

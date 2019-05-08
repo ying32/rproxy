@@ -3,47 +3,55 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
+	"runtime"
+	"strings"
 	"time"
 
-	"github.com/ying32/govcl/vcl/rtl"
-
-	"github.com/ying32/rproxy/librp"
-
 	"github.com/ying32/govcl/vcl"
+	"github.com/ying32/govcl/vcl/rtl"
+	"github.com/ying32/govcl/vcl/types"
+	"github.com/ying32/govcl/vcl/types/colors"
+	"github.com/ying32/rproxy/librp"
 )
 
 const randStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 //::private::
 type TMainFormFields struct {
-	rpClient         *librp.TRPClient
+	rpObj            librp.IRPObject
 	rpConfigFileName string
 	started          bool
 	autoReboot       bool
 	appCfg           *vcl.TIniFile
+	modeIndex        int32
 }
 
 func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
 	f.ScreenCenter()
 	rand.Seed(time.Now().Unix())
+	f.PageControl1.SetActivePageIndex(0)
 
 	f.started = false
 	f.appCfg = vcl.NewIniFile(rtl.ExtractFilePath(vcl.Application.ExeName()) + "app.conf")
 
+	if runtime.GOOS == "windows" {
+		f.TrayIcon1.SetIcon(vcl.Application.Icon())
+	}
+
 	librp.IsGUI = true
 	librp.LogGUICallback = f.logCallback
 	f.loadAppConfig()
-	// 新建客户端
-	f.rpClient = librp.NewRPClient()
+
 }
 
 func (f *TMainForm) OnFormDestroy(sender vcl.IObject) {
 	if f.appCfg != nil {
 		f.appCfg.Free()
 	}
-	if f.rpClient != nil {
-		f.rpClient.Close()
+	if f.rpObj != nil {
+		f.rpObj.Close()
 	}
 }
 
@@ -57,11 +65,15 @@ func (f *TMainForm) loadAppConfig() {
 	}
 	f.autoReboot = f.appCfg.ReadBool("System", "AutoReboot", true)
 	f.ChkAutoReconnect.SetChecked(f.autoReboot)
+	f.modeIndex = f.appCfg.ReadInteger("System", "ModeIndex", 0)
+	f.RGMode.SetItemIndex(f.modeIndex)
+	f.updateCaption()
 }
 
 func (f *TMainForm) logCallback(msg string) {
 	vcl.ThreadSync(func() {
-		f.StatusBar1.SetSimpleText(msg)
+		//f.StatusBar1.SetSimpleText(msg)
+		f.LstLogs.Items().Add(msg)
 	})
 }
 
@@ -104,8 +116,10 @@ func (f *TMainForm) updateUIConfig(cfg *librp.TRProxyConfig) {
 	f.EditTLSCertFile.SetText(cfg.TLSCertFile)
 	f.EditTLSKeyFile.SetText(cfg.TLSKeyFile)
 
-	f.SpinHTTPPort.SetValue(int32(cfg.Client.HTTPPort))
+	f.SpinCliHTTPPort.SetValue(int32(cfg.Client.HTTPPort))
 	f.EditSvrAddr.SetText(cfg.Client.SvrAddr)
+
+	f.SpinSvrHTTPPort.SetValue(int32(cfg.Server.HTTPPort))
 
 }
 
@@ -130,7 +144,7 @@ func (f *TMainForm) saveUIConfig() {
 
 	cfg := new(librp.TRProxyConfig)
 	// 获取服务端的
-	cfg.Server = librp.GetConfig().Server
+	//cfg.Server = librp.GetConfig().Server
 
 	cfg.TCPPort = int(f.SpinTCPPort.Value())
 	cfg.VerifyKey = f.EditVerifyKey.Text()
@@ -140,8 +154,10 @@ func (f *TMainForm) saveUIConfig() {
 	cfg.TLSCertFile = f.EditTLSCertFile.Text()
 	cfg.TLSKeyFile = f.EditTLSKeyFile.Text()
 
-	cfg.Client.HTTPPort = int(f.SpinHTTPPort.Value())
+	cfg.Client.HTTPPort = int(f.SpinCliHTTPPort.Value())
 	cfg.Client.SvrAddr = f.EditSvrAddr.Text()
+
+	cfg.Server.HTTPPort = int(f.SpinSvrHTTPPort.Value())
 
 	if !rtl.FileExists(f.rpConfigFileName) {
 		if f.DlgSaveCfg.Execute() {
@@ -177,43 +193,95 @@ func (f *TMainForm) OnChkAutoReconnectClick(sender vcl.IObject) {
 	f.appCfg.WriteBool("System", "AutoReboot", f.autoReboot)
 }
 
-func (f *TMainForm) OnActStartExecute(sender vcl.IObject) {
+func (f *TMainForm) runSvr() {
+	str := ""
+	switch f.modeIndex {
+	case 0:
+		s := fmt.Sprintln("客户端启动，连接服务器：", f.EditSvrAddr.Text(), "， 端口：", f.SpinTCPPort.Value())
+		str += s
+		librp.Log.I(s)
+		if f.ChkIsHttps.Checked() {
+			s = "转发至HTTP服务为HTTPS"
+			str += s + "\r\n"
+			librp.Log.I(s)
+		}
+		s = fmt.Sprintln("转发至本地HTTP(S)端口：", f.SpinCliHTTPPort.Value())
+		str += s
+		librp.Log.I(s)
 
-	f.started = true
-	go func() {
-		for f.started {
-			librp.Log.I("连接服务端...")
-			err := f.rpClient.Start()
-			if err != nil {
-				librp.Log.I("5秒后重新连接...")
-				for i := 0; i < 5; i++ {
-					if !f.started {
-						break
-					}
-					time.Sleep(time.Second * 1)
-				}
-				if !f.autoReboot {
+	case 1:
+		s := fmt.Sprintln("TCP服务端已启动，端口：", f.SpinTCPPort.Value())
+		str += s
+		librp.Log.I(s)
+		if f.ChkIsHttps.Checked() {
+			s = "当前HTTP服务为HTTPS"
+			str += s + "\r\n"
+			librp.Log.I(s)
+		}
+		s = fmt.Sprintln("HTTP(S)服务端已开启，端口：", f.SpinSvrHTTPPort.Value())
+		str += s
+		librp.Log.I(s)
+	}
+
+	f.TrayIcon1.SetHint(str)
+	for f.started {
+		librp.Log.I("连接服务端...")
+		err := f.rpObj.Start()
+		if err != nil {
+			librp.Log.E("连接服务器错误：", err)
+			librp.Log.I("5秒后重新连接...")
+			for i := 0; i < 5; i++ {
+				if !f.started {
 					break
 				}
+				time.Sleep(time.Second * 1)
+			}
+			if !f.autoReboot {
+				break
 			}
 		}
-		librp.Log.I("已停止")
-		vcl.ThreadSync(func() {
-			f.BtnStop.Click()
-		})
-	}()
+	}
+	librp.Log.I("已停止")
+	vcl.ThreadSync(func() {
+		f.BtnStop.Click()
+	})
+}
+
+func (f *TMainForm) OnActStartExecute(sender vcl.IObject) {
+
+	switch f.modeIndex {
+	case 0:
+		f.rpObj = librp.NewRPClient()
+	case 1:
+		f.rpObj = librp.NewRPServer()
+	}
+	if f.rpObj == nil {
+		vcl.ShowMessage("rproxy对象创建失败。")
+		return
+	}
+
+	f.started = true
+
+	f.LstLogs.Clear()
+
+	go f.runSvr()
 
 	f.setControlState(false)
 }
 
 func (f *TMainForm) setControlState(state bool) {
 	f.ChkIsHttps.SetEnabled(state)
+	f.RGMode.SetEnabled(state)
+
 	var i int32
-	for i = 0; i < f.GPBase.ControlCount(); i++ {
-		f.GPBase.Controls(i).SetEnabled(state)
+	for i = 0; i < f.GBBase.ControlCount(); i++ {
+		f.GBBase.Controls(i).SetEnabled(state)
 	}
-	for i = 0; i < f.GPTLS.ControlCount(); i++ {
-		f.GPTLS.Controls(i).SetEnabled(state)
+	for i = 0; i < f.GBTLS.ControlCount(); i++ {
+		f.GBTLS.Controls(i).SetEnabled(state)
+	}
+	for i = 0; i < f.GBAppSettings.ControlCount(); i++ {
+		f.GBAppSettings.Controls(i).SetEnabled(state)
 	}
 }
 
@@ -225,7 +293,11 @@ func (f *TMainForm) OnActStopExecute(sender vcl.IObject) {
 	f.started = false
 	f.setControlState(true)
 
-	f.rpClient.Close()
+	if f.rpObj != nil {
+		f.rpObj.Close()
+	}
+	f.rpObj = nil
+	f.updateCaption()
 }
 
 func (f *TMainForm) OnActStopUpdate(sender vcl.IObject) {
@@ -237,7 +309,37 @@ func (f *TMainForm) OnBtnNewCfgClick(sender vcl.IObject) {
 	f.rpConfigFileName = ""
 }
 
-func (f *TMainForm) OnGPTLSClick(sender vcl.IObject) {
-
+func (f *TMainForm) updateCaption() {
+	f.SetCaption("rproxy[" + f.RGMode.Items().Strings(f.modeIndex) + "]")
+	f.TrayIcon1.SetHint(f.Caption())
 }
 
+func (f *TMainForm) OnRGModeClick(sender vcl.IObject) {
+	f.modeIndex = f.RGMode.ItemIndex()
+	f.appCfg.WriteInteger("System", "ModeIndex", f.modeIndex)
+	f.updateCaption()
+}
+
+func (f *TMainForm) OnLstLogsDrawItem(control vcl.IWinControl, index int32, aRect types.TRect, state types.TOwnerDrawState) {
+	canvas := f.LstLogs.Canvas()
+
+	canvas.Font().SetColor(colors.ClBlack)
+	s := f.LstLogs.Items().Strings(index)
+	if strings.HasPrefix(s, "[ERROR]") {
+		canvas.Font().SetColor(colors.ClRed)
+	} else if strings.HasPrefix(s, "[DEBUG]") {
+		canvas.Font().SetColor(colors.ClGreen)
+	} else if strings.HasPrefix(s, "[WARNING]") {
+		canvas.Font().SetColor(colors.ClYellow)
+	}
+	canvas.Brush().SetColor(colors.ClWhite)
+	canvas.FillRect(aRect)
+	if rtl.InSets(uint32(state), types.OdSelected) {
+		canvas.Font().SetColor(colors.ClBlue)
+	}
+	canvas.TextOut(aRect.Left, aRect.Top, s)
+}
+
+func (f *TMainForm) OnGBBaseClick(sender vcl.IObject) {
+
+}
