@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
+	"errors"
 
 	"github.com/ying32/govcl/vcl"
 	"github.com/ying32/govcl/vcl/rtl"
