@@ -80,8 +80,8 @@ rproxy --cfgfile="./conf/confighttps.cfg"
 支持Windows、Linux、MacOSX等，无第三方依赖库。  
 
 ### 二进制下载
-
-https://github.com/ying32/rproxy/releases/tag/v0.5  
+* v0.6带GUI https://github.com/ying32/rproxy/releases/tag/v0.6  
+* v0.5 https://github.com/ying32/rproxy/releases/tag/v0.5  
 
  
 
