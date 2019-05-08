@@ -16,7 +16,6 @@ type
     ActionList1: TActionList;
     ActStart: TAction;
     ActStop: TAction;
-    BtnCAOpen: TButton;
     BtnCertOpen: TButton;
     BtnKeyOpen: TButton;
     BtnLoadCfg: TButton;
@@ -25,6 +24,7 @@ type
     BtnSaveCfg: TButton;
     BtnStart: TButton;
     BtnStop: TButton;
+    BtnCAOpen: TButton;
     ChkAutoReconnect: TCheckBox;
     ChkIsHttps: TCheckBox;
     ChkIsZip: TCheckBox;
@@ -60,24 +60,6 @@ type
     TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
     TrayIcon1: TTrayIcon;
-    procedure ActStartExecute(Sender: TObject);
-    procedure ActStartUpdate(Sender: TObject);
-    procedure ActStopExecute(Sender: TObject);
-    procedure ActStopUpdate(Sender: TObject);
-    procedure BtnCAOpenClick(Sender: TObject);
-    procedure BtnCertOpenClick(Sender: TObject);
-    procedure BtnKeyOpenClick(Sender: TObject);
-    procedure BtnLoadCfgClick(Sender: TObject);
-    procedure BtnNewCfgClick(Sender: TObject);
-    procedure BtnRandKeyClick(Sender: TObject);
-    procedure BtnSaveCfgClick(Sender: TObject);
-    procedure ChkAutoReconnectClick(Sender: TObject);
-
-    procedure GBBaseClick(Sender: TObject);
-
-    procedure LstLogsDrawItem(Control: TWinControl; Index: Integer;
-      ARect: TRect; State: TOwnerDrawState);
-    procedure RGModeClick(Sender: TObject);
   private
 
   public
@@ -90,101 +72,6 @@ var
 implementation
 
 {$R *.lfm}
-
-{ TMainForm }
-
-
-
-
-
-procedure TMainForm.RGModeClick(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.BtnRandKeyClick(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.BtnSaveCfgClick(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.ChkAutoReconnectClick(Sender: TObject);
-begin
-  //
-end;
-
-
-
-procedure TMainForm.GBBaseClick(Sender: TObject);
-begin
-
-end;
-
-
-procedure TMainForm.LstLogsDrawItem(Control: TWinControl; Index: Integer;
-  ARect: TRect; State: TOwnerDrawState);
-begin
-  //
-end;
-
-procedure TMainForm.BtnCAOpenClick(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.ActStartExecute(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.ActStartUpdate(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.ActStopExecute(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.ActStopUpdate(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.BtnCertOpenClick(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.BtnKeyOpenClick(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.BtnLoadCfgClick(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.BtnNewCfgClick(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.BtnCAOpenClick(Sender: TObject);
-begin
-  //
-end;
-
-procedure TMainForm.BtnNewCfgClick(Sender: TObject);
-begin
-  //
-end;
 
 end.
 

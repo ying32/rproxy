@@ -26,11 +26,14 @@ type TMainFormFields struct {
 	autoReboot       bool
 	appCfg           *vcl.TIniFile
 	modeIndex        int32
+	isDarwin         bool
 }
 
 func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
-	f.ScreenCenter()
 	rand.Seed(time.Now().Unix())
+	f.isDarwin = runtime.GOOS == "darwin"
+
+	f.ScreenCenter()
 	f.PageControl1.SetActivePageIndex(0)
 
 	f.started = false
@@ -38,12 +41,23 @@ func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
 
 	if runtime.GOOS == "windows" {
 		f.TrayIcon1.SetIcon(vcl.Application.Icon())
+	} else {
+		loadMainIconFromStream(f.TrayIcon1.Icon())
 	}
 
 	librp.IsGUI = true
 	librp.LogGUICallback = f.logCallback
 	f.loadAppConfig()
 
+}
+
+func loadMainIconFromStream(outIcon *vcl.TIcon) {
+	if outIcon.IsValid() {
+		mem := vcl.NewMemoryStreamFromBytes(mainIconBytes)
+		defer mem.Free() // 不要在阻塞的时候使用defer不然会一直到阻塞结束才释放，这里使用是因为这个函数结束了就释放了
+		mem.SetPosition(0)
+		outIcon.LoadFromStream(mem)
+	}
 }
 
 func (f *TMainForm) OnFormDestroy(sender vcl.IObject) {
@@ -66,7 +80,7 @@ func (f *TMainForm) loadAppConfig() {
 	f.autoReboot = f.appCfg.ReadBool("System", "AutoReboot", true)
 	f.ChkAutoReconnect.SetChecked(f.autoReboot)
 	f.modeIndex = f.appCfg.ReadInteger("System", "ModeIndex", 0)
-	f.RGMode.SetItemIndex(f.modeIndex)
+	f.setRPMode(f.modeIndex)
 	f.updateCaption()
 }
 
@@ -75,6 +89,50 @@ func (f *TMainForm) logCallback(msg string) {
 		//f.StatusBar1.SetSimpleText(msg)
 		f.LstLogs.Items().Add(msg)
 	})
+}
+
+// 下面两个函数用于解决TRadioGroup在MacOS下bug问题
+func (f *TMainForm) getRPMode() int32 {
+	if f.isDarwin {
+		var i int32
+		for i = 0; i < f.RGMode.ControlCount(); i++ {
+			ctl := f.RGMode.Controls(i)
+			if strings.Compare(ctl.Name(), fmt.Sprintf("RadioButton%d", i)) == 0 {
+				if vcl.RadioButtonFromObj(ctl).Checked() {
+					return i
+				}
+			}
+		}
+		return -1
+	} else {
+		return f.RGMode.ItemIndex()
+	}
+}
+
+func (f *TMainForm) setRPMode(idx int32) {
+	if f.isDarwin {
+		var i int32
+		for i = 0; i < f.RGMode.ControlCount(); i++ {
+			ctl := f.RGMode.Controls(i)
+			if strings.Compare(ctl.Name(), fmt.Sprintf("RadioButton%d", i)) == 0 {
+				if idx == i {
+					vcl.RadioButtonFromObj(ctl).SetChecked(true)
+				} else {
+					vcl.RadioButtonFromObj(ctl).SetChecked(false)
+				}
+			}
+		}
+	} else {
+		f.RGMode.SetItemIndex(idx)
+	}
+}
+
+func (f *TMainForm) setTrayHint(text string) {
+	if f.isDarwin {
+		// darwin下出bug
+		return
+	}
+	f.TrayIcon1.SetHint(text)
 }
 
 func (f *TMainForm) OnBtnRandKeyClick(sender vcl.IObject) {
@@ -143,8 +201,6 @@ func (f *TMainForm) saveUIConfig() {
 	}
 
 	cfg := new(librp.TRProxyConfig)
-	// 获取服务端的
-	//cfg.Server = librp.GetConfig().Server
 
 	cfg.TCPPort = int(f.SpinTCPPort.Value())
 	cfg.VerifyKey = f.EditVerifyKey.Text()
@@ -223,7 +279,7 @@ func (f *TMainForm) runSvr() {
 		librp.Log.I(s)
 	}
 
-	f.TrayIcon1.SetHint(str)
+	f.setTrayHint(str)
 	for f.started {
 		librp.Log.I("连接服务端...")
 		err := f.rpObj.Start()
@@ -310,12 +366,18 @@ func (f *TMainForm) OnBtnNewCfgClick(sender vcl.IObject) {
 }
 
 func (f *TMainForm) updateCaption() {
-	f.SetCaption("rproxy[" + f.RGMode.Items().Strings(f.modeIndex) + "]")
-	f.TrayIcon1.SetHint(f.Caption())
+	if f.isDarwin {
+		// 唉macOS下liblcl.dylib有内部bug
+		m := []string{"客户端", "服务端"}
+		f.SetCaption("rproxy[" + m[f.modeIndex] + "]")
+	} else {
+		f.SetCaption("rproxy[" + f.RGMode.Items().Strings(f.modeIndex) + "]")
+	}
+	f.setTrayHint(f.Caption())
 }
 
 func (f *TMainForm) OnRGModeClick(sender vcl.IObject) {
-	f.modeIndex = f.RGMode.ItemIndex()
+	f.modeIndex = f.getRPMode()
 	f.appCfg.WriteInteger("System", "ModeIndex", f.modeIndex)
 	f.updateCaption()
 }
