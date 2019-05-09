@@ -1,5 +1,5 @@
 @echo off
-echo ±‡“Î32Œªrproxy.exe÷–...
+echo Compiling 32-bit rproxy...
 
 set GOARCH=386
 set GOOS=windows

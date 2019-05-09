@@ -1,5 +1,5 @@
 @echo off
-echo ±‡“Î64Œªrproxy.exe÷–...
+echo Compiling 64-bit rproxy...
 
 set GOARCH=amd64
 set GOOS=windows
