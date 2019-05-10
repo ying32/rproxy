@@ -196,9 +196,13 @@ func createZipFile(zipFileName string, isGUI bool) error {
 			}
 		case "darwin":
 			if runtime.GOARCH == "386" {
-
 				// 产生一个app
-				//pkgMacOSApp("../rproxy")
+				pkgMacOSApp("../rproxy_GUI")
+				compressFile("./rproxy.app/Contents/PkgInfo", "rproxy.app/Contents/PkgInfo")
+				compressFile("./rproxy.app/Contents/Info.plist", "rproxy.app/Contents/Info.plist")
+				compressFile("./rproxy.app/Contents/Resources/rproxy.icns", "rproxy.app/Contents/Resources/rproxy.icns")
+				compressFile("./rproxy.app/Contents/MacOS/rproxy", "rproxy.app/Contents/MacOS/rproxy")
+				compressFile("./rproxy.app/Contents/MacOS/liblcl.dylib", "rproxy.app/Contents/MacOS/liblcl.dylib")
 			}
 		}
 	}
