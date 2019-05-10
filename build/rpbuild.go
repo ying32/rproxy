@@ -88,15 +88,15 @@ func darwinPkg() {
 
 	fmt.Println("编译rproxy-darwin64")
 	if executeBash("build-darwin64.sh") == nil {
-		fmt.Println("打包rproxy-darwin")
-		createZipFile("rproxy-darwin.zip", false)
+		fmt.Println("打包rproxy-darwin64")
+		createZipFile("rproxy-darwin64.zip", false)
 	}
 	fmt.Println("------------------------------")
 
 	fmt.Println("编译rproxy-darwin32-GUI")
 	if executeBash("build-darwin32-GUI.sh") == nil {
 		fmt.Println("打包rproxy-darwin32-GUI")
-		createZipFile("rproxy-win32-GUI.zip", true)
+		createZipFile("rproxy-darwin32-GUI.zip", true, true)
 	}
 	fmt.Println("------------------------------")
 
@@ -125,7 +125,7 @@ func executeBash(fileName string) error {
 	return err
 }
 
-func createZipFile(zipFileName string, isGUI bool) error {
+func createZipFile(zipFileName string, isGUI bool, isDarwin32 ...bool) error {
 	f, err := os.Create(zipFileName)
 	if err != nil {
 		return err
@@ -179,7 +179,11 @@ func createZipFile(zipFileName string, isGUI bool) error {
 	if isGUI {
 		fnSuffix = "_GUI"
 	}
-	compressFile("../rproxy"+fnSuffix+exeExt, "rproxy"+exeExt)
+
+	if len(isDarwin32) == 0 {
+		compressFile("../rproxy"+fnSuffix+exeExt, "rproxy"+exeExt)
+	}
+
 	// 复制动态链接库
 	if isGUI {
 		switch runtime.GOOS {
@@ -195,15 +199,16 @@ func createZipFile(zipFileName string, isGUI bool) error {
 				compressFile("/usr/lib/liblcl.so", "")
 			}
 		case "darwin":
-			if runtime.GOARCH == "386" {
-				// 产生一个app
-				pkgMacOSApp("../rproxy_GUI")
-				compressFile("./rproxy.app/Contents/PkgInfo", "rproxy.app/Contents/PkgInfo")
-				compressFile("./rproxy.app/Contents/Info.plist", "rproxy.app/Contents/Info.plist")
-				compressFile("./rproxy.app/Contents/Resources/rproxy.icns", "rproxy.app/Contents/Resources/rproxy.icns")
-				compressFile("./rproxy.app/Contents/MacOS/rproxy", "rproxy.app/Contents/MacOS/rproxy")
-				compressFile("./rproxy.app/Contents/MacOS/liblcl.dylib", "rproxy.app/Contents/MacOS/liblcl.dylib")
-			}
+
+			// 产生一个app
+			pkgMacOSApp("../rproxy_GUI")
+
+			compressFile("./rproxy.app/Contents/PkgInfo", "rproxy.app/Contents/PkgInfo")
+			compressFile("./rproxy.app/Contents/Info.plist", "rproxy.app/Contents/Info.plist")
+			compressFile("./rproxy.app/Contents/Resources/rproxy.icns", "rproxy.app/Contents/Resources/rproxy.icns")
+			compressFile("./rproxy.app/Contents/MacOS/rproxy", "rproxy.app/Contents/MacOS/rproxy")
+			compressFile("./rproxy.app/Contents/MacOS/liblcl.dylib", "rproxy.app/Contents/MacOS/liblcl.dylib")
+
 		}
 	}
 
@@ -348,6 +353,7 @@ func pkgMacOSApp(exeFileName string) error {
 	}
 
 	copyFile(exeFileName, execFile)
+	os.Chmod(execFile, 0755)
 
 	return nil
 }
