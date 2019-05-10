@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	DEBUG          = true           // 调试模式 输出 Log.D 字符
+	DEBUG          = false           // 调试模式 输出 Log.D 字符
 	IsGUI          = false          // 是否为GUI
 	LogGUICallback func(msg string) // 当IsGUI=true时，不再输出到日志，使用当前回调函数
 )
