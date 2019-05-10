@@ -77,7 +77,10 @@ func (s *TRPServer) tcpServer() error {
 }
 
 func badRequest(w http.ResponseWriter) {
-	http.Error(w, errorHTML, http.StatusBadRequest)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(http.StatusBadRequest)
+	w.Write([]byte(errorHTML))
 }
 
 type THTTPHandler struct {

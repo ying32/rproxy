@@ -30,7 +30,7 @@ var CheckConfigError = errors.New("检查配置错误")
 type TMainFormFields struct {
 	rpObj            librp.IRPObject
 	rpConfigFileName string
-	started          bool
+	running          bool
 	autoReboot       bool
 	appCfg           *vcl.TIniFile
 	modeIndex        int32
@@ -54,7 +54,7 @@ func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
 	f.PageControl1.SetActivePageIndex(0)
 	f.PageControl2.SetActivePageIndex(0)
 
-	f.started = false
+	f.running = false
 	f.appCfg = vcl.NewIniFile(rtl.ExtractFilePath(vcl.Application.ExeName()) + "app.conf")
 
 	if runtime.GOOS == "windows" {
@@ -67,6 +67,13 @@ func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
 	librp.LogGUICallback = f.logCallback
 	f.loadAppConfig()
 
+}
+
+func (f *TMainForm) OnFormCloseQuery(sender vcl.IObject, canClose *bool) {
+	if f.running {
+		vcl.MessageDlg("当前服务正在运行中，请停止后再退出。", types.MtWarning, types.MbOK)
+		*canClose = false
+	}
 }
 
 func loadMainIconFromStream(outIcon *vcl.TIcon) {
@@ -293,13 +300,13 @@ func (f *TMainForm) runSvr() {
 	switch f.modeIndex {
 	case CLIENT:
 		librp.Log.I("连接服务端...")
-		for f.started {
+		for f.running {
 			err := f.rpObj.Start()
 			if err != nil {
 				librp.Log.E("连接服务器错误：", err)
 				librp.Log.I("5秒后重新连接...")
 				for i := 0; i < 5; i++ {
-					if !f.started {
+					if !f.running {
 						break
 					}
 					time.Sleep(time.Second * 1)
@@ -310,7 +317,7 @@ func (f *TMainForm) runSvr() {
 			}
 		}
 	case SERVER:
-		if f.started {
+		if f.running {
 			err := f.rpObj.Start()
 			if err != nil {
 				librp.Log.E("启动服务端错误：", err)
@@ -336,7 +343,7 @@ func (f *TMainForm) OnActStartExecute(sender vcl.IObject) {
 		return
 	}
 
-	f.started = true
+	f.running = true
 
 	f.LstLogs.Clear()
 
@@ -392,11 +399,11 @@ func (f *TMainForm) setControlState(state bool) {
 }
 
 func (f *TMainForm) OnActStartUpdate(sender vcl.IObject) {
-	vcl.ActionFromObj(sender).SetEnabled(!f.started && f.rpConfigLoaded)
+	vcl.ActionFromObj(sender).SetEnabled(!f.running && f.rpConfigLoaded)
 }
 
 func (f *TMainForm) OnActStopExecute(sender vcl.IObject) {
-	f.started = false
+	f.running = false
 	f.setControlState(true)
 
 	if f.rpObj != nil {
@@ -407,7 +414,7 @@ func (f *TMainForm) OnActStopExecute(sender vcl.IObject) {
 }
 
 func (f *TMainForm) OnActStopUpdate(sender vcl.IObject) {
-	vcl.ActionFromObj(sender).SetEnabled(f.started && f.rpConfigLoaded)
+	vcl.ActionFromObj(sender).SetEnabled(f.running && f.rpConfigLoaded)
 }
 
 func (f *TMainForm) OnBtnNewCfgClick(sender vcl.IObject) {
