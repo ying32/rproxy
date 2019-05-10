@@ -42,6 +42,14 @@ func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
 	rand.Seed(time.Now().Unix())
 	f.isDarwin = runtime.GOOS == "darwin"
 
+	// 都是坑
+	if runtime.GOOS == "linux" {
+		f.SpinMaxLogLine.SetAutoSize(true)
+		f.SpinCliHTTPPort.SetAutoSize(true)
+		f.SpinSvrHTTPPort.SetAutoSize(true)
+		f.SpinTCPPort.SetAutoSize(true)
+	}
+
 	f.ScreenCenter()
 	f.PageControl1.SetActivePageIndex(0)
 	f.PageControl2.SetActivePageIndex(0)
