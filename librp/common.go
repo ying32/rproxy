@@ -19,8 +19,24 @@ var (
 )
 
 const (
-	CLIENT = "client"
-	SERVER = "server"
+	CLIENT    = "client"
+	SERVER    = "server"
+	errorHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+<title>(*>﹏<*)错误啦</title>
+<style>
+    body { width: 40em; margin: 0 auto; }
+</style>
+</head>
+<body>
+<h2>请求错误啦</h2>
+<p>(*>﹏<*)您要访问的页面目前无法使用<br/>
+要不等一会再试试吧。。。</p>
+<p>本服务由<a href="https://github.com/ying32/rproxy">rproxy</a>所提供。</p>
+</body>
+</html>`
 )
 
 func initConfig() *TRProxyConfig {

@@ -77,7 +77,7 @@ func (s *TRPServer) tcpServer() error {
 }
 
 func badRequest(w http.ResponseWriter) {
-	http.Error(w, "请求错误，错误消息请看控制台信息。", http.StatusBadRequest)
+	http.Error(w, errorHTML, http.StatusBadRequest)
 }
 
 type THTTPHandler struct {
