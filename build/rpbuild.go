@@ -86,6 +86,13 @@ func linuxPkg() {
 
 func darwinPkg() {
 
+	fmt.Println("编译rproxy-darwin64-GUI")
+	if executeBash("build-darwin64-GUI.sh") == nil {
+		fmt.Println("打包rproxy-darwin64-GUI")
+		createZipFile("rproxy-darwin64-GUI.zip", true, true)
+	}
+	fmt.Println("------------------------------")
+
 	fmt.Println("编译rproxy-darwin64")
 	if executeBash("build-darwin64.sh") == nil {
 		fmt.Println("打包rproxy-darwin64")
@@ -93,12 +100,12 @@ func darwinPkg() {
 	}
 	fmt.Println("------------------------------")
 
-	fmt.Println("编译rproxy-darwin32-GUI")
-	if executeBash("build-darwin32-GUI.sh") == nil {
-		fmt.Println("打包rproxy-darwin32-GUI")
-		createZipFile("rproxy-darwin32-GUI.zip", true, true)
-	}
-	fmt.Println("------------------------------")
+	//fmt.Println("编译rproxy-darwin32-GUI")
+	//if executeBash("build-darwin32-GUI.sh") == nil {
+	//	fmt.Println("打包rproxy-darwin32-GUI")
+	//	createZipFile("rproxy-darwin32-GUI.zip", true, true)
+	//}
+	//fmt.Println("------------------------------")
 
 	fmt.Println("编译rproxy-darwin32")
 	if executeBash("build-darwin32.sh") == nil {
@@ -125,7 +132,7 @@ func executeBash(fileName string) error {
 	return err
 }
 
-func createZipFile(zipFileName string, isGUI bool, isDarwin32 ...bool) error {
+func createZipFile(zipFileName string, isGUI bool, isDarwinApp ...bool) error {
 	f, err := os.Create(zipFileName)
 	if err != nil {
 		return err
@@ -180,7 +187,7 @@ func createZipFile(zipFileName string, isGUI bool, isDarwin32 ...bool) error {
 		fnSuffix = "_GUI"
 	}
 
-	if len(isDarwin32) == 0 {
+	if len(isDarwinApp) == 0 {
 		compressFile("../rproxy"+fnSuffix+exeExt, "rproxy"+exeExt)
 	}
 
