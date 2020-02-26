@@ -21,6 +21,7 @@ var (
 	tlsKeyFile  = flag.String("tlskeyfile", "", "当ishttps为true时，所需求的TLS密匙文件")
 	isZip       = flag.Bool("iszip", false, "是否开启zip压缩")
 	configFile  = flag.String("cfgfile", "", "使用指定的配置文件中的参数，此时只有mode参数有效")
+	localAddr   = flag.String("localaddr", "127.0.0.1", "转发至本地的地址，只有mode参数为client时有效")
 )
 
 func main() {
@@ -48,6 +49,7 @@ func main() {
 			rpConfig.Client.SvrAddr = *svrAddr
 			rpConfig.Client.TLSCertFile = *tlsCertFile
 			rpConfig.Client.TLSKeyFile = *tlsKeyFile
+			rpConfig.Client.LocalAddr = *localAddr
 		}
 		rpConfig.VerifyKey = *verifyKey
 		rpConfig.IsHTTPS = *isHTTPS

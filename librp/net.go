@@ -117,12 +117,15 @@ func EncodeRequest(r *http.Request) ([]byte, error) {
 }
 
 // 将字节转为request
-func DecodeRequest(data []byte, port int, isHttps bool) (*http.Request, error) {
+func DecodeRequest(data []byte, reqHost string, port int, isHttps bool) (*http.Request, error) {
 	req, err := http.ReadRequest(bufio.NewReader(bytes.NewReader(data)))
 	if err != nil {
 		return nil, err
 	}
-	req.Host = "127.0.0.1"
+	if reqHost == "" {
+		reqHost = "127.0.0.1"
+	}
+	req.Host = reqHost
 	scheme := "http"
 	if isHttps {
 		scheme = "https"

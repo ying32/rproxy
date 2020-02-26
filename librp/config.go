@@ -30,6 +30,7 @@ type TRProxyConfig struct {
 		HTTPPort    int    `json:"httpport"`    // 当mode为server时为服务端监听端口，当为mode为client时为转发至本地客户端的端口
 		TLSCertFile string `json:"tlscertfile"` // 当ishttps为true时，所需求的TLS证书文件
 		TLSKeyFile  string `json:"tlskeyfile"`  // 当ishttps为true时，所需求的TLS密匙文件
+		LocalAddr   string `json:"localaddr"`   // 转发至本地的地址，默认为127.0.0.1
 	} `json:"client"`
 }
 

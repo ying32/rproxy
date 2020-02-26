@@ -91,7 +91,7 @@ func (c *TRPClient) process() error {
 			case PacketCmd1:
 				// Decode请求
 
-				req, err := DecodeRequest(data, conf.Client.HTTPPort, conf.IsHTTPS)
+				req, err := DecodeRequest(data, conf.Client.LocalAddr, conf.Client.HTTPPort, conf.IsHTTPS)
 				if err != nil {
 					return wError(c.conn, err)
 				}

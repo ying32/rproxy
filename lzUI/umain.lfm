@@ -1,68 +1,67 @@
 object MainForm: TMainForm
-  Left = 936
-  Height = 727
-  Top = 323
-  Width = 622
+  Left = 905
+  Height = 582
+  Top = 288
+  Width = 498
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'rproxy'
-  ClientHeight = 727
-  ClientWidth = 622
-  DesignTimePPI = 120
+  ClientHeight = 582
+  ClientWidth = 498
   Position = poScreenCenter
-  LCLVersion = '2.0.0.4'
+  LCLVersion = '2.0.6.0'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 29
-    Top = 698
-    Width = 622
+    Height = 22
+    Top = 560
+    Width = 498
     Panels = <>
     ParentFont = False
   end
   object Panel1: TPanel
     Left = 0
-    Height = 698
+    Height = 560
     Top = 0
-    Width = 622
+    Width = 498
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 698
-    ClientWidth = 622
+    ClientHeight = 560
+    ClientWidth = 498
     ParentFont = False
     TabOrder = 1
     object Panel2: TPanel
       Left = 0
-      Height = 42
-      Top = 656
-      Width = 622
+      Height = 34
+      Top = 526
+      Width = 498
       Align = alBottom
-      ClientHeight = 42
-      ClientWidth = 622
+      ClientHeight = 34
+      ClientWidth = 498
       ParentFont = False
       TabOrder = 0
       object BtnStart: TButton
-        Left = 408
-        Height = 31
-        Top = 5
-        Width = 94
+        Left = 326
+        Height = 25
+        Top = 4
+        Width = 75
         Action = ActStart
         ParentFont = False
         TabOrder = 0
       end
       object BtnStop: TButton
-        Left = 512
-        Height = 31
-        Top = 5
-        Width = 94
+        Left = 410
+        Height = 25
+        Top = 4
+        Width = 75
         Action = ActStop
         ParentFont = False
         TabOrder = 1
       end
       object Label12: TLabel
-        Left = 40
-        Height = 20
-        Top = 11
-        Width = 345
+        Left = 32
+        Height = 17
+        Top = 9
+        Width = 276
         Caption = '注：如有修改配置，需要【保存配置】后方能生效。'
         Font.Color = clGreen
         ParentColor = False
@@ -71,9 +70,9 @@ object MainForm: TMainForm
     end
     object PageControl1: TPageControl
       Left = 0
-      Height = 656
+      Height = 526
       Top = 0
-      Width = 622
+      Width = 498
       ActivePage = TabSheet1
       Align = alClient
       ParentFont = False
@@ -82,14 +81,14 @@ object MainForm: TMainForm
       OnChange = PageControl1Change
       object TabSheet1: TTabSheet
         Caption = '服务端/客户端设置'
-        ClientHeight = 623
-        ClientWidth = 614
+        ClientHeight = 496
+        ClientWidth = 490
         ParentFont = False
         object RGMode: TRadioGroup
           Left = 0
-          Height = 72
+          Height = 58
           Top = 0
-          Width = 614
+          Width = 490
           Align = alTop
           AutoFill = True
           Caption = '模式选择'
@@ -100,8 +99,8 @@ object MainForm: TMainForm
           ChildSizing.ShrinkVertical = crsScaleChilds
           ChildSizing.Layout = cclLeftToRightThenTopToBottom
           ChildSizing.ControlsPerLine = 2
-          ClientHeight = 47
-          ClientWidth = 610
+          ClientHeight = 36
+          ClientWidth = 486
           Columns = 2
           ItemIndex = 0
           Items.Strings = (
@@ -113,20 +112,20 @@ object MainForm: TMainForm
         end
         object GBBase: TGroupBox
           Left = 0
-          Height = 280
-          Top = 136
-          Width = 614
+          Height = 221
+          Top = 109
+          Width = 490
           Align = alClient
           Caption = '服务端/客户端设置'
-          ClientHeight = 255
-          ClientWidth = 610
+          ClientHeight = 199
+          ClientWidth = 486
           ParentFont = False
           TabOrder = 1
           object Label1: TLabel
-            Left = 21
-            Height = 28
-            Top = 8
-            Width = 202
+            Left = 17
+            Height = 22
+            Top = 6
+            Width = 162
             AutoSize = False
             Caption = '连接或监听的TCP端口：'
             Layout = tlCenter
@@ -134,10 +133,10 @@ object MainForm: TMainForm
             ParentFont = False
           end
           object Label2: TLabel
-            Left = 21
-            Height = 28
-            Top = 88
-            Width = 202
+            Left = 17
+            Height = 22
+            Top = 70
+            Width = 162
             AutoSize = False
             Caption = '客户端转发的HTTP(S)端口：'
             Layout = tlCenter
@@ -145,10 +144,10 @@ object MainForm: TMainForm
             ParentFont = False
           end
           object Label3: TLabel
-            Left = 24
-            Height = 28
-            Top = 169
-            Width = 88
+            Left = 19
+            Height = 22
+            Top = 135
+            Width = 70
             AutoSize = False
             Caption = '验证KEY：'
             Layout = tlCenter
@@ -156,10 +155,10 @@ object MainForm: TMainForm
             ParentFont = False
           end
           object Label7: TLabel
-            Left = 24
-            Height = 28
-            Top = 128
-            Width = 89
+            Left = 19
+            Height = 22
+            Top = 102
+            Width = 71
             AutoSize = False
             Caption = '服务器地址：'
             Layout = tlCenter
@@ -167,11 +166,11 @@ object MainForm: TMainForm
             ParentFont = False
           end
           object SpinTCPPort: TSpinEdit
-            Left = 258
-            Height = 28
+            Left = 206
+            Height = 22
             Hint = '可输入1-65535'
-            Top = 8
-            Width = 98
+            Top = 6
+            Width = 78
             AutoSize = False
             MaxValue = 65535
             MinValue = 1
@@ -180,11 +179,11 @@ object MainForm: TMainForm
             Value = 8285
           end
           object SpinCliHTTPPort: TSpinEdit
-            Left = 258
-            Height = 28
+            Left = 206
+            Height = 22
             Hint = '可输入1-65535'
-            Top = 88
-            Width = 98
+            Top = 70
+            Width = 78
             AutoSize = False
             MaxValue = 65535
             MinValue = 1
@@ -193,83 +192,83 @@ object MainForm: TMainForm
             Value = 8286
           end
           object ChkIsZip: TCheckBox
-            Left = 24
-            Height = 24
-            Top = 212
-            Width = 106
+            Left = 19
+            Height = 21
+            Top = 170
+            Width = 88
             Caption = '开启ZIP压缩'
             ParentFont = False
             TabOrder = 2
           end
           object EditVerifyKey: TEdit
-            Left = 115
-            Height = 28
-            Top = 169
-            Width = 186
+            Left = 92
+            Height = 22
+            Top = 135
+            Width = 149
             AutoSize = False
             ParentFont = False
             TabOrder = 3
           end
           object BtnRandKey: TButton
-            Left = 302
-            Height = 31
-            Top = 168
-            Width = 54
+            Left = 242
+            Height = 25
+            Top = 134
+            Width = 43
             Caption = '随机'
             ParentFont = False
             TabOrder = 4
           end
           object BtnSaveCfg: TButton
-            Left = 504
-            Height = 31
-            Top = 78
-            Width = 94
+            Left = 403
+            Height = 25
+            Top = 62
+            Width = 75
             Caption = '保存配置'
             OnClick = BtnSaveCfgClick
             ParentFont = False
             TabOrder = 5
           end
           object BtnLoadCfg: TButton
-            Left = 504
-            Height = 31
-            Top = 8
-            Width = 94
+            Left = 403
+            Height = 25
+            Top = 6
+            Width = 75
             Caption = '载入配置'
             ParentFont = False
             TabOrder = 6
           end
           object BtnNewCfg: TButton
-            Left = 504
-            Height = 31
-            Top = 43
-            Width = 94
+            Left = 403
+            Height = 25
+            Top = 34
+            Width = 75
             Caption = '新建配置'
             ParentFont = False
             TabOrder = 7
           end
           object EditSvrAddr: TEdit
-            Left = 115
-            Height = 28
-            Top = 128
-            Width = 241
+            Left = 92
+            Height = 22
+            Top = 102
+            Width = 193
             AutoSize = False
             ParentFont = False
             TabOrder = 8
           end
           object ChkIsHttps: TCheckBox
-            Left = 155
-            Height = 24
-            Top = 212
-            Width = 138
+            Left = 124
+            Height = 21
+            Top = 170
+            Width = 112
             Caption = '监听/转发HTTPS'
             ParentFont = False
             TabOrder = 9
           end
           object Label8: TLabel
-            Left = 21
-            Height = 28
-            Top = 48
-            Width = 202
+            Left = 17
+            Height = 22
+            Top = 38
+            Width = 162
             AutoSize = False
             Caption = '服务端监听的HTTP(S)端口：'
             Layout = tlCenter
@@ -277,11 +276,11 @@ object MainForm: TMainForm
             ParentFont = False
           end
           object SpinSvrHTTPPort: TSpinEdit
-            Left = 258
-            Height = 28
+            Left = 206
+            Height = 22
             Hint = '可输入1-65535'
-            Top = 48
-            Width = 98
+            Top = 38
+            Width = 78
             AutoSize = False
             MaxValue = 65535
             MinValue = 1
@@ -292,30 +291,31 @@ object MainForm: TMainForm
         end
         object GBTLS: TGroupBox
           Left = 0
-          Height = 207
-          Top = 416
-          Width = 614
+          Height = 166
+          Top = 330
+          Width = 490
           Align = alBottom
           Caption = 'TLS证书设置'
-          ClientHeight = 182
-          ClientWidth = 610
+          ClientHeight = 144
+          ClientWidth = 486
           ParentFont = False
           TabOrder = 2
           object Panel3: TPanel
             Left = 0
-            Height = 40
+            Height = 32
             Top = 0
-            Width = 610
+            Width = 486
             Align = alTop
             BevelOuter = bvNone
-            ClientHeight = 40
-            ClientWidth = 610
+            ClientHeight = 32
+            ClientWidth = 486
+            ParentFont = False
             TabOrder = 0
             object Label4: TLabel
-              Left = 21
-              Height = 28
-              Top = 9
-              Width = 108
+              Left = 17
+              Height = 22
+              Top = 7
+              Width = 86
               AutoSize = False
               Caption = 'TLS CA根证书：'
               Layout = tlCenter
@@ -323,19 +323,19 @@ object MainForm: TMainForm
               ParentFont = False
             end
             object EditTLSCAFile: TEdit
-              Left = 140
-              Height = 31
-              Top = 4
-              Width = 412
+              Left = 112
+              Height = 25
+              Top = 3
+              Width = 330
               AutoSize = False
               ParentFont = False
               TabOrder = 0
             end
             object BtnCAOpen: TButton
-              Left = 555
-              Height = 31
-              Top = 4
-              Width = 34
+              Left = 444
+              Height = 25
+              Top = 3
+              Width = 27
               BidiMode = bdRightToLeft
               Caption = '...'
               ParentBidiMode = False
@@ -345,33 +345,36 @@ object MainForm: TMainForm
           end
           object PageControl2: TPageControl
             Left = 0
-            Height = 142
-            Top = 40
-            Width = 610
-            ActivePage = TabSheet4
+            Height = 112
+            Top = 32
+            Width = 486
+            ActivePage = TabSheet3
             Align = alClient
-            TabIndex = 1
+            ParentFont = False
+            TabIndex = 0
             TabOrder = 1
             TabPosition = tpBottom
             object TabSheet3: TTabSheet
               Caption = '客户端TLS'
-              ClientHeight = 109
-              ClientWidth = 602
+              ClientHeight = 82
+              ClientWidth = 478
+              ParentFont = False
               object Panel4: TPanel
                 Left = 0
-                Height = 109
+                Height = 82
                 Top = 0
-                Width = 602
+                Width = 478
                 Align = alClient
                 BevelOuter = bvNone
-                ClientHeight = 109
-                ClientWidth = 602
+                ClientHeight = 82
+                ClientWidth = 478
+                ParentFont = False
                 TabOrder = 0
                 object Label6: TLabel
-                  Left = 16
-                  Height = 28
-                  Top = 64
-                  Width = 108
+                  Left = 13
+                  Height = 22
+                  Top = 51
+                  Width = 86
                   AutoSize = False
                   Caption = 'TLS Key文件：'
                   Layout = tlCenter
@@ -379,19 +382,19 @@ object MainForm: TMainForm
                   ParentFont = False
                 end
                 object EditTLSCliKeyFile: TEdit
-                  Left = 135
-                  Height = 31
-                  Top = 61
-                  Width = 412
+                  Left = 108
+                  Height = 25
+                  Top = 49
+                  Width = 330
                   AutoSize = False
                   ParentFont = False
                   TabOrder = 0
                 end
                 object Label5: TLabel
-                  Left = 16
-                  Height = 28
-                  Top = 19
-                  Width = 101
+                  Left = 13
+                  Height = 22
+                  Top = 15
+                  Width = 81
                   AutoSize = False
                   Caption = 'TLS Cert文件：'
                   Layout = tlCenter
@@ -399,19 +402,19 @@ object MainForm: TMainForm
                   ParentFont = False
                 end
                 object EditTLSCliCertFile: TEdit
-                  Left = 135
-                  Height = 31
-                  Top = 16
-                  Width = 412
+                  Left = 108
+                  Height = 25
+                  Top = 13
+                  Width = 330
                   AutoSize = False
                   ParentFont = False
                   TabOrder = 1
                 end
                 object BtnCliCertOpen: TButton
-                  Left = 550
-                  Height = 31
-                  Top = 16
-                  Width = 34
+                  Left = 440
+                  Height = 25
+                  Top = 13
+                  Width = 27
                   BidiMode = bdRightToLeft
                   Caption = '...'
                   ParentBidiMode = False
@@ -420,10 +423,10 @@ object MainForm: TMainForm
                   TabOrder = 2
                 end
                 object BtnCliKeyOpen: TButton
-                  Left = 550
-                  Height = 31
-                  Top = 61
-                  Width = 34
+                  Left = 440
+                  Height = 25
+                  Top = 49
+                  Width = 27
                   BidiMode = bdRightToLeft
                   Caption = '...'
                   ParentBidiMode = False
@@ -435,23 +438,25 @@ object MainForm: TMainForm
             end
             object TabSheet4: TTabSheet
               Caption = '服务端TLS'
-              ClientHeight = 109
-              ClientWidth = 602
+              ClientHeight = 82
+              ClientWidth = 478
+              ParentFont = False
               object Panel5: TPanel
                 Left = 0
-                Height = 109
+                Height = 82
                 Top = 0
-                Width = 602
+                Width = 478
                 Align = alClient
                 BevelOuter = bvNone
-                ClientHeight = 109
-                ClientWidth = 602
+                ClientHeight = 82
+                ClientWidth = 478
+                ParentFont = False
                 TabOrder = 0
                 object Label10: TLabel
-                  Left = 16
-                  Height = 28
-                  Top = 19
-                  Width = 101
+                  Left = 13
+                  Height = 22
+                  Top = 15
+                  Width = 81
                   AutoSize = False
                   Caption = 'TLS Cert文件：'
                   Layout = tlCenter
@@ -459,19 +464,19 @@ object MainForm: TMainForm
                   ParentFont = False
                 end
                 object EditTLSSvrCertFile: TEdit
-                  Left = 135
-                  Height = 31
-                  Top = 16
-                  Width = 412
+                  Left = 108
+                  Height = 25
+                  Top = 13
+                  Width = 330
                   AutoSize = False
                   ParentFont = False
                   TabOrder = 0
                 end
                 object BtnSvrCertOpen: TButton
-                  Left = 550
-                  Height = 31
-                  Top = 16
-                  Width = 34
+                  Left = 440
+                  Height = 25
+                  Top = 13
+                  Width = 27
                   BidiMode = bdRightToLeft
                   Caption = '...'
                   ParentBidiMode = False
@@ -480,10 +485,10 @@ object MainForm: TMainForm
                   TabOrder = 1
                 end
                 object BtnSvrKeyOpen: TButton
-                  Left = 550
-                  Height = 31
-                  Top = 61
-                  Width = 34
+                  Left = 440
+                  Height = 25
+                  Top = 49
+                  Width = 27
                   BidiMode = bdRightToLeft
                   Caption = '...'
                   ParentBidiMode = False
@@ -492,19 +497,19 @@ object MainForm: TMainForm
                   TabOrder = 2
                 end
                 object EditTLSSvrKeyFile: TEdit
-                  Left = 135
-                  Height = 31
-                  Top = 61
-                  Width = 412
+                  Left = 108
+                  Height = 25
+                  Top = 49
+                  Width = 330
                   AutoSize = False
                   ParentFont = False
                   TabOrder = 3
                 end
                 object Label11: TLabel
-                  Left = 16
-                  Height = 28
-                  Top = 64
-                  Width = 108
+                  Left = 13
+                  Height = 22
+                  Top = 51
+                  Width = 86
                   AutoSize = False
                   Caption = 'TLS Key文件：'
                   Layout = tlCenter
@@ -517,29 +522,29 @@ object MainForm: TMainForm
         end
         object GBAppSettings: TGroupBox
           Left = 0
-          Height = 64
-          Top = 72
-          Width = 614
+          Height = 51
+          Top = 58
+          Width = 490
           Align = alTop
           Caption = 'APP设置'
-          ClientHeight = 39
-          ClientWidth = 610
+          ClientHeight = 29
+          ClientWidth = 486
           ParentFont = False
           TabOrder = 3
           object ChkAutoReconnect: TCheckBox
-            Left = 24
-            Height = 24
-            Top = 4
-            Width = 219
+            Left = 19
+            Height = 21
+            Top = 3
+            Width = 178
             Caption = '与服务器连接断开后自动重连'
             ParentFont = False
             TabOrder = 0
           end
           object Label9: TLabel
-            Left = 304
-            Height = 28
+            Left = 243
+            Height = 22
             Top = 0
-            Width = 112
+            Width = 90
             AutoSize = False
             Caption = '最大日志行数：'
             Layout = tlCenter
@@ -547,10 +552,10 @@ object MainForm: TMainForm
             ParentFont = False
           end
           object SpinMaxLogLine: TSpinEdit
-            Left = 408
-            Height = 28
+            Left = 326
+            Height = 22
             Top = 0
-            Width = 168
+            Width = 134
             AutoSize = False
             MaxValue = 200000
             MinValue = 1
@@ -572,8 +577,8 @@ object MainForm: TMainForm
           Top = 0
           Width = 614
           Align = alClient
-          BorderSpacing.Bottom = 5
-          Font.Height = -15
+          BorderSpacing.Bottom = 4
+          Font.Height = -12
           ItemHeight = 0
           ParentFont = False
           Style = lbOwnerDrawFixed
@@ -585,16 +590,16 @@ object MainForm: TMainForm
   object DlgSaveCfg: TSaveDialog
     DefaultExt = '.cfg'
     Filter = '配置文件|*.cfg'
-    left = 496
-    top = 344
+    left = 397
+    top = 275
   end
   object DlgOpen: TOpenDialog
-    left = 544
-    top = 344
+    left = 435
+    top = 275
   end
   object ActionList1: TActionList
-    left = 448
-    top = 344
+    left = 358
+    top = 275
     object ActStart: TAction
       Caption = '启动'
     end
@@ -604,7 +609,7 @@ object MainForm: TMainForm
   end
   object TrayIcon1: TTrayIcon
     Visible = True
-    left = 448
-    top = 288
+    left = 358
+    top = 230
   end
 end
