@@ -11,6 +11,7 @@ import (
 
 	"errors"
 
+	_ "github.com/ying32/govcl/pkgs/winappres"
 	"github.com/ying32/govcl/vcl"
 	"github.com/ying32/govcl/vcl/rtl"
 	"github.com/ying32/govcl/vcl/types"
@@ -34,13 +35,13 @@ type TMainFormFields struct {
 	autoReboot       bool
 	appCfg           *vcl.TIniFile
 	modeIndex        int32
-	isDarwin         bool
-	rpConfigLoaded   bool
+	//isDarwin         bool
+	rpConfigLoaded bool
 }
 
 func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
 	rand.Seed(time.Now().Unix())
-	f.isDarwin = runtime.GOOS == "darwin"
+	//f.isDarwin = runtime.GOOS == "darwin"
 
 	// 都是坑
 	if runtime.GOOS == "linux" {
@@ -57,9 +58,7 @@ func (f *TMainForm) OnFormCreate(sender vcl.IObject) {
 	f.running = false
 	f.appCfg = vcl.NewIniFile(rtl.ExtractFilePath(vcl.Application.ExeName()) + "app.conf")
 
-	if runtime.GOOS == "windows" {
-		f.TrayIcon1.SetIcon(vcl.Application.Icon())
-	} else {
+	if runtime.GOOS != "windows" {
 		loadMainIconFromStream(f.TrayIcon1.Icon())
 	}
 
@@ -126,45 +125,18 @@ func (f *TMainForm) logCallback(msg string) {
 
 // 下面两个函数用于解决TRadioGroup在MacOS下bug问题
 func (f *TMainForm) getRPMode() int32 {
-	if f.isDarwin {
-		var i int32
-		for i = 0; i < f.RGMode.ControlCount(); i++ {
-			ctl := f.RGMode.Controls(i)
-			if strings.Compare(ctl.Name(), fmt.Sprintf("RadioButton%d", i)) == 0 {
-				if vcl.RadioButtonFromObj(ctl).Checked() {
-					return i
-				}
-			}
-		}
-		return -1
-	} else {
-		return f.RGMode.ItemIndex()
-	}
+	return f.RGMode.ItemIndex()
 }
 
 func (f *TMainForm) setRPMode(idx int32) {
-	if f.isDarwin {
-		var i int32
-		for i = 0; i < f.RGMode.ControlCount(); i++ {
-			ctl := f.RGMode.Controls(i)
-			if strings.Compare(ctl.Name(), fmt.Sprintf("RadioButton%d", i)) == 0 {
-				if idx == i {
-					vcl.RadioButtonFromObj(ctl).SetChecked(true)
-				} else {
-					vcl.RadioButtonFromObj(ctl).SetChecked(false)
-				}
-			}
-		}
-	} else {
-		f.RGMode.SetItemIndex(idx)
-	}
+	f.RGMode.SetItemIndex(idx)
 }
 
 func (f *TMainForm) setTrayHint(text string) {
-	if f.isDarwin {
-		// darwin下出bug
-		return
-	}
+	//if f.isDarwin {
+	//	// darwin下出bug
+	//	return
+	//}
 	f.TrayIcon1.SetHint(text)
 }
 
@@ -399,7 +371,7 @@ func (f *TMainForm) setControlState(state bool) {
 }
 
 func (f *TMainForm) OnActStartUpdate(sender vcl.IObject) {
-	vcl.ActionFromObj(sender).SetEnabled(!f.running && f.rpConfigLoaded)
+	vcl.AsAction(sender).SetEnabled(!f.running && f.rpConfigLoaded)
 }
 
 func (f *TMainForm) OnActStopExecute(sender vcl.IObject) {
@@ -414,7 +386,7 @@ func (f *TMainForm) OnActStopExecute(sender vcl.IObject) {
 }
 
 func (f *TMainForm) OnActStopUpdate(sender vcl.IObject) {
-	vcl.ActionFromObj(sender).SetEnabled(f.running && f.rpConfigLoaded)
+	vcl.AsAction(sender).SetEnabled(f.running && f.rpConfigLoaded)
 }
 
 func (f *TMainForm) OnBtnNewCfgClick(sender vcl.IObject) {
@@ -424,13 +396,13 @@ func (f *TMainForm) OnBtnNewCfgClick(sender vcl.IObject) {
 }
 
 func (f *TMainForm) updateCaption() {
-	if f.isDarwin {
-		// 唉macOS下liblcl.dylib有内部bug
-		m := []string{"客户端", "服务端"}
-		f.SetCaption("rproxy[" + m[f.modeIndex] + "]")
-	} else {
-		f.SetCaption("rproxy[" + f.RGMode.Items().Strings(f.modeIndex) + "]")
-	}
+	//if f.isDarwin {
+	//	// 唉macOS下liblcl.dylib有内部bug
+	//	m := []string{"客户端", "服务端"}
+	//	f.SetCaption("rproxy[" + m[f.modeIndex] + "]")
+	//} else {
+	f.SetCaption("rproxy[" + f.RGMode.Items().S(f.modeIndex) + "]")
+	//}
 	f.setTrayHint(f.Caption())
 }
 
@@ -444,7 +416,7 @@ func (f *TMainForm) OnLstLogsDrawItem(control vcl.IWinControl, index int32, aRec
 	canvas := f.LstLogs.Canvas()
 
 	canvas.Font().SetColor(colors.ClBlack)
-	s := f.LstLogs.Items().Strings(index)
+	s := f.LstLogs.Items().S(index)
 	if strings.HasPrefix(s, "[ERROR]") {
 		canvas.Font().SetColor(colors.ClRed)
 	} else if strings.HasPrefix(s, "[DEBUG]") {
@@ -454,7 +426,7 @@ func (f *TMainForm) OnLstLogsDrawItem(control vcl.IWinControl, index int32, aRec
 	}
 	canvas.Brush().SetColor(colors.ClWhite)
 	canvas.FillRect(aRect)
-	if rtl.InSets(uint32(state), types.OdSelected) {
+	if state.In(types.OdSelected) {
 		canvas.Font().SetColor(colors.ClBlue)
 	}
 	canvas.TextOut(aRect.Left, aRect.Top, s)
